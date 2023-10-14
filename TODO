@@ -1,0 +1,7 @@
+
+- tenter lire Object.st et ajouter le bazard restant
+    . ajouter les initalize (Object initialize!) en fin de fichier
+- compiler une classe pour un interpreteur simpliste registre based et voir
+comment ça fonctionne
+- créer un object memory et faire un running live smalltalk
+
