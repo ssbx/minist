@@ -1,3 +1,6 @@
+#
+# voir https://www.gnu.org/prep/standards/standards.html#Makefile-Basics
+#
 SHELL = /bin/sh
 BISON = bison
 FLEX  = flex
@@ -10,14 +13,14 @@ ALLCFLAGS = -I. $(CFLAGS)
 OBJECTS   = parse.tab.o scan.yy.o main.o
 
 
-run: minist-compile
-	./minist-compile files/Behavior.st
+run: ministc
+	./ministc files/Behavior.st
 
-minist-compile: $(OBJECTS)
-	$(CC) -o minist-compile $(OBJECTS)
+ministc: $(OBJECTS)
+	$(CC) -o ministc $(OBJECTS)
 
 clean:
-	$(RM) -f parse.tab.h parse.tab.c scan.yy.h scan.yy.c *.o minist-compile
+	$(RM) -f parse.tab.h parse.tab.c scan.yy.h scan.yy.c *.o ministc
 
 
 scan.yy.c scan.yy.y: scan.l parse.tab.h

@@ -3,4 +3,4 @@ parse.tab.h
 scan.yy.c
 scan.yy.h
 *.o
-minist-compile
+ministc
