@@ -499,6 +499,7 @@ void compile_method(struct ClassHeader*h, struct Method* m) {
         exp = exp->next;
     }
     printf("TODO create the header and then, create a valid compiled method\n");
+    printf("TODO create my own thing: primBytecode followed by the primitiveIndex\n");
     printf("flag value 0-4 args, return self 5, return an instance var 6, 7 header extention with num of args and primitive index\n");
 }
 

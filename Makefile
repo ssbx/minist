@@ -28,14 +28,14 @@ OBJECTS = parse.tab.o scan.yy.o main.o
 
 .PHONY: run clean
 
-run: ministc
-	./ministc files/Test.st
+run: minist-img-gen
+	./minist-img-gen files/Test.st
 
-ministc: $(OBJECTS)
-	$(CC) -o ministc $(OBJECTS)
+minist-img-gen: $(OBJECTS)
+	$(CC) -o minist-img-gen $(OBJECTS)
 
 clean:
-	$(RM) parse.tab.h parse.tab.c scan.yy.h scan.yy.c *.o ministc
+	$(RM) parse.tab.h parse.tab.c scan.yy.h scan.yy.c *.o minist-img-gen
 
 scan.yy.c scan.yy.y: scan.l parse.tab.h
 	$(FLEX) --outfile=scan.yy.c --header-file=scan.yy.h scan.l
