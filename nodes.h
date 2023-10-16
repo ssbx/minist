@@ -35,10 +35,11 @@ struct ClassClassHeader {
 struct ClassHeader {
     struct ExprUnit *super;
     struct ExprUnit *className;
-    char *instsVarNames;
+    int instsVarNamesCount;
     char *classVarNames;
     char *poolDict;
     char *category;
+    char **instsVarNames;
 };
 
 struct ClassComment {

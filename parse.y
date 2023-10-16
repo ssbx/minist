@@ -690,7 +690,25 @@ mkClassHeader(
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
     h->super = super;
     h->className = classname;
-    h->instsVarNames = instvars->string.value;
+    h->instsVarNamesCount = 0;
+    int i;
+    int len = strlen(instvars->string.value);
+    for (i = 0; i < len; i++) {
+        if (instvars->string.value[i] == ' ') h->instsVarNamesCount ++;
+    }
+    char *tok;
+    i = 0;
+    if (h->instsVarNamesCount) {
+        h->instsVarNames = malloc(sizeof(char*) * h->instsVarNamesCount);
+        tok = strtok(instvars->string.value, " ");
+        while (tok) {
+            h->instsVarNames[i] = tok;
+            i++;
+            tok = strtok(NULL, " ");
+        }
+    } else {
+        h->instsVarNames = NULL;
+    }
     h->classVarNames = classvars->string.value;
     h->poolDict = pooldict->string.value;
     h->category = category->string.value;

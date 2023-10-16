@@ -29,7 +29,7 @@ OBJECTS = parse.tab.o scan.yy.o main.o
 .PHONY: run clean
 
 run: ministc
-	./ministc files/Behavior.st
+	./ministc files/Test.st
 
 ministc: $(OBJECTS)
 	$(CC) -o ministc $(OBJECTS)
