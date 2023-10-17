@@ -4,3 +4,4 @@ scan.yy.c
 scan.yy.h
 *.o
 minist-img-gen
+*.swp

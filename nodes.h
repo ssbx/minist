@@ -13,43 +13,49 @@ struct UnaryMsg;
 struct BinaryMsg;
 struct Cascade;
 
-struct Temp {
-    struct Temp *next;
-    struct ExprUnit *name; // TODO must be simple char
-};
-
+/*
+ * Represent one file of a smalltalk class.
+ */
 struct ClassFile {
-    struct ClassHeader  *header;
-    struct ClassComment *comment;
-    struct MethodCategory *categories;
+    struct ClassHeader      *header;
+    struct MethodCategory   *categories;
     struct ClassClassHeader *classHeader;
-    struct MethodCategory *classCategories;
-};
-
-struct ClassClassHeader {
-    struct ExprUnit *className;
-    char *instVarNames;
+    struct MethodCategory   *classCategories;
+    char                    *comment;
 };
 
 struct ClassHeader {
-    struct ExprUnit *super;
-    struct ExprUnit *className;
-    int instsVarNamesCount;
-    char *classVarNames;
-    char *poolDict;
-    char *category;
+    char *super;
+    char *className;
+    int    instsVarNamesCount;
     char **instsVarNames;
+    int    classVarNamesCount;
+    char **classVarNames;
+    int    poolDictsCount;
+    char **poolDicts;
+    char *category;
 };
 
 struct ClassComment {
-    struct ExprUnit *className;
-    char *comment;
+    char *className;
+    char *str;
+};
+
+struct ClassClassHeader {
+    char  *className;
+    int    instVarNamesCount;
+    char **instVarNames;
+};
+
+struct Temp {
+    struct Temp *next;
+    struct ExprUnit *name; // TODO must be simple *char
 };
 
 struct MethodCategory {
     struct MethodCategory *next;
     char* name;
-    struct ExprUnit* classname;
+    struct ExprUnit* classname; // wtf should be string
     struct Method* methods;
 };
 
@@ -59,11 +65,11 @@ struct Method {
     struct ExprUnit  *prim;
     struct ExprUnit  *exprs;
 
-    int   buffsize;
-    int   bytecount;
+    int            buffsize;
+    int            bytecount;
     unsigned char *bytecodes;
 
-    struct Method    *next;
+    struct Method *next;
 };
 
 struct MethodDef {

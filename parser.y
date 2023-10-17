@@ -16,6 +16,7 @@ extern char *fname;
 
 struct ClassFile* parsed_file = NULL;
 
+void freeExprUnit(struct ExprUnit *expr);
 void checkStr(char*, char*);
 struct ExprUnit* allocExprUnit(int);
 struct ExprUnit* mkArray(struct ExprUnit*);
@@ -128,6 +129,11 @@ clsheader: id keysel symconst
         checkStr($6,  "classVariableNames:");
         checkStr($8,  "poolDictionaries:");
         checkStr($10, "category:");
+        free($2);
+        free($4);
+        free($6);
+        free($8);
+        free($10);
         $$ = mkClassHeader($1, $3, $5, $7, $9, $11);}
 
 /******************************************************************************
@@ -135,6 +141,7 @@ clsheader: id keysel symconst
  *****************************************************************************/
 classcomment: id keysel string '!' {
             checkStr($2, "comment:");
+            free($2);
             $$ = mkComment($1, $3); }
 
 /******************************************************************************
@@ -161,6 +168,8 @@ category: '!' id keysel string '!' methods '!' {
 clsclsheader: id id keysel string '!' {
         checkStr($3,"instanceVariableNames:");
         checkStr($2->id.name, "class");
+        free($3);
+        freeExprUnit($2);
         $$ = mkClassClassHeader($1, $4);}
 
 /******************************************************************************
@@ -659,6 +668,19 @@ mkMethodCategory(
     free(category);
     return c;
 }
+void freeExprUnit(struct ExprUnit *expr)
+{
+    switch (expr->type) {
+        case ST_ID:
+            free(expr->id.name);
+            free(expr);
+            break;
+        case ST_STRING:
+            free(expr->string.value);
+            free(expr);
+            break;
+    }
+}
 
 struct ClassFile*
 mkFile(
@@ -670,12 +692,35 @@ mkFile(
 {
     struct ClassFile *f = malloc(sizeof(struct ClassFile));
     f->header = head;
-    f->comment = comment;
+
+    assert(strcmp(comment->className, &head->className[1]) == 0);
+    f->comment = comment->str;
+    free(comment);
     f->categories = category;
     f->classHeader = clshead;
     f->classCategories = clscategories;
     parsed_file = f;
     return f;
+}
+
+int tokenizeStString(char *str, char ***dst)
+{
+    int tsize = 0;
+    int tnum  = 0;
+    char **tokens = NULL;
+    char  *tok;
+    tok = strtok(str, " ");
+    while (tok) {
+        if (tsize == tnum) {
+            tokens = realloc(tokens, sizeof(char*) + 10);
+            tsize += 10;
+        }
+        tokens[tnum++] = strdup(tok);
+        tok = strtok(NULL, " ");
+    }
+    *dst = tokens;
+    return tnum;
+
 }
 
 struct ClassHeader*
@@ -688,32 +733,30 @@ mkClassHeader(
         struct ExprUnit *category)
 {
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
-    h->super = super;
-    h->className = classname;
-    h->instsVarNamesCount = 0;
-    int i;
-    int len = strlen(instvars->string.value);
-    for (i = 0; i < len; i++) {
-        if (instvars->string.value[i] == ' ') h->instsVarNamesCount ++;
-    }
-    char *tok;
-    i = 0;
-    if (h->instsVarNamesCount) {
-        h->instsVarNames = malloc(sizeof(char*) * h->instsVarNamesCount);
-        tok = strtok(instvars->string.value, " ");
-        while (tok) {
-            h->instsVarNames[i] = tok;
-            i++;
-            tok = strtok(NULL, " ");
-        }
-    } else {
-        h->instsVarNames = NULL;
-    }
-    h->classVarNames = classvars->string.value;
-    h->poolDict = pooldict->string.value;
-    h->category = category->string.value;
-    free(instvars); free(classvars); free(pooldict);
-    free(category);
+
+    assert((super->type    == ST_ID) && (!super->next));
+    h->super = super->id.name;
+    free(super);
+
+    assert(classname->type == ST_SYMBOL);
+    h->className = classname->symbol.value;
+    free(classname);
+
+    assert(instvars->type  == ST_STRING);
+    h->instsVarNamesCount = tokenizeStString(instvars->string.value, &h->instsVarNames);
+    freeExprUnit(instvars);
+
+    assert(classvars->type == ST_STRING);
+    h->classVarNamesCount = tokenizeStString(classvars->string.value, &h->classVarNames);
+    freeExprUnit(classvars);
+
+    assert(pooldict->type  == ST_STRING);
+    h->poolDictsCount = tokenizeStString(pooldict->string.value, &h->poolDicts);
+    freeExprUnit(pooldict);
+
+    assert(category->type  == ST_STRING);
+    h->category = strdup(category->string.value);
+    freeExprUnit(category);
     return h;
 }
 
@@ -723,8 +766,14 @@ mkComment(
         struct ExprUnit *comment)
 {
     struct ClassComment *c = malloc(sizeof(struct ClassComment));
-    c->className = className;
-    c->comment = comment->string.value;
+
+    assert(className->type == ST_ID);
+    c->className = strdup(className->id.name);
+    freeExprUnit(className);
+
+    assert(comment->type == ST_STRING);
+    c->str = strdup(comment->string.value);
+    freeExprUnit(comment);
     return c;
 }
 
@@ -754,8 +803,14 @@ mkClassClassHeader(
         struct ExprUnit *instvars)
 {
     struct ClassClassHeader *c = malloc(sizeof(struct ClassClassHeader));
-    c->className = name;
-    c->instVarNames = instvars->string.value;
+    assert(name->type     == ST_ID);
+    c->className = strdup(name->id.name);
+    freeExprUnit(name);
+
+    assert(instvars->type == ST_STRING);
+    c->instVarNamesCount = tokenizeStString(instvars->string.value, &c->instVarNames);
+    freeExprUnit(instvars);
+
     return c;
 }
 

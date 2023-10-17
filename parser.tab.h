@@ -78,7 +78,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 60 "parser.y"
+#line 61 "parser.y"
 
     char                  *str;
     struct ClassFile      *file;

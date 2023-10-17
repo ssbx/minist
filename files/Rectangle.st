@@ -45,7 +45,7 @@ cascade
 "========================" !
 
 Rectangle class
-    instanceVariableNames: '' !
+    instanceVariableNames: 'abcd' !
 
 !Rectangle class methodsFor: 'accessing'!
 

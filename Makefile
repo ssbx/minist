@@ -33,11 +33,11 @@ ALLFLEXFLAGS = --outfile=scanner.yy.c --header-file=scanner.yy.h $(FLEXFLAGS)
 
 # all objects. Clear guard and definition
 OBJECTS =
-OBJECTS = parser.tab.o scanner.yy.o compiler.o pprinter.o $(PROG).o
+OBJECTS = parser.tab.o scanner.yy.o compiler.o pprinter.o bytecodes.o $(PROG).o
 
 # cleanfiles
 CLEANFILES =
-CLEANFILES = $(PROG) *.o parser.tab.h parser.tab.c scanner.yy.h scanner.yy.c
+CLEANFILES = $(PROG) *.o parser.tab.* scanner.yy.*
 
 include depends.mk
 

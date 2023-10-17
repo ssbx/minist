@@ -86,6 +86,7 @@ extern char *fname;
 
 struct ClassFile* parsed_file = NULL;
 
+void freeExprUnit(struct ExprUnit *expr);
 void checkStr(char*, char*);
 struct ExprUnit* allocExprUnit(int);
 struct ExprUnit* mkArray(struct ExprUnit*);
@@ -125,7 +126,7 @@ struct ClassFile* mkFile(struct ClassHeader*, struct ClassComment*,
 struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
       struct ExprUnit*, struct ExprUnit*, struct ExprUnit*,  struct ExprUnit*);
 
-#line 129 "parser.tab.c"
+#line 130 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -617,18 +618,18 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   110,   110,   111,   112,   113,   115,   121,   136,   143,
-     144,   151,   154,   161,   169,   170,   176,   180,   188,   189,
-     199,   200,   201,   202,   203,   205,   209,   210,   211,   213,
-     214,   225,   226,   227,   239,   240,   241,   242,   243,   248,
-     249,   250,   251,   256,   256,   256,   257,   258,   259,   260,
-     265,   266,   271,   271,   272,   273,   274,   279,   279,   279,
-     280,   281,   282,   287,   288,   289,   290,   291,   292,   294,
-     295,   300,   301,   302,   304,   304,   306,   307,   315,   315,
-     315,   315,   317,   317,   317,   317,   317,   319,   320,   321,
-     322,   323,   324,   325,   327,   328,   328,   328,   328,   328,
-     328,   328,   329,   329,   329,   329,   329,   329,   330,   330,
-     330,   330
+       0,   111,   111,   112,   113,   114,   116,   122,   142,   150,
+     151,   158,   161,   168,   178,   179,   185,   189,   197,   198,
+     208,   209,   210,   211,   212,   214,   218,   219,   220,   222,
+     223,   234,   235,   236,   248,   249,   250,   251,   252,   257,
+     258,   259,   260,   265,   265,   265,   266,   267,   268,   269,
+     274,   275,   280,   280,   281,   282,   283,   288,   288,   288,
+     289,   290,   291,   296,   297,   298,   299,   300,   301,   303,
+     304,   309,   310,   311,   313,   313,   315,   316,   324,   324,
+     324,   324,   326,   326,   326,   326,   326,   328,   329,   330,
+     331,   332,   333,   334,   336,   337,   337,   337,   337,   337,
+     337,   337,   338,   338,   338,   338,   338,   338,   339,   339,
+     339,   339
 };
 #endif
 
@@ -1600,193 +1601,201 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* file: clsheader classcomment  */
-#line 110 "parser.y"
+#line 111 "parser.y"
                                         {(yyval.file) = mkFile((yyvsp[-1].header),(yyvsp[0].comment),NULL,NULL,NULL);}
-#line 1606 "parser.tab.c"
+#line 1607 "parser.tab.c"
     break;
 
   case 3: /* file: clsheader classcomment categories  */
-#line 111 "parser.y"
+#line 112 "parser.y"
                                         {(yyval.file) = mkFile((yyvsp[-2].header),(yyvsp[-1].comment),(yyvsp[0].category),NULL,NULL);}
-#line 1612 "parser.tab.c"
+#line 1613 "parser.tab.c"
     break;
 
   case 4: /* file: clsheader classcomment categories '!'  */
-#line 112 "parser.y"
+#line 113 "parser.y"
                                             {(yyval.file) = mkFile((yyvsp[-3].header),(yyvsp[-2].comment),(yyvsp[-1].category),NULL,NULL);}
-#line 1618 "parser.tab.c"
+#line 1619 "parser.tab.c"
     break;
 
   case 5: /* file: clsheader classcomment categories '!' clsclsheader  */
-#line 114 "parser.y"
+#line 115 "parser.y"
             { (yyval.file) = mkFile((yyvsp[-4].header), (yyvsp[-3].comment), (yyvsp[-2].category), (yyvsp[0].ccheader), NULL); }
-#line 1624 "parser.tab.c"
+#line 1625 "parser.tab.c"
     break;
 
   case 6: /* file: clsheader classcomment categories '!' clsclsheader clscategories  */
-#line 116 "parser.y"
+#line 117 "parser.y"
             { (yyval.file) = mkFile((yyvsp[-5].header), (yyvsp[-4].comment), (yyvsp[-3].category), (yyvsp[-1].ccheader), (yyvsp[0].category)); }
-#line 1630 "parser.tab.c"
+#line 1631 "parser.tab.c"
     break;
 
   case 7: /* clsheader: id keysel symconst keysel string keysel string keysel string keysel string '!'  */
-#line 125 "parser.y"
+#line 126 "parser.y"
                                {
         checkStr((yyvsp[-10].str),  "subclass:");
         checkStr((yyvsp[-8].str),  "instanceVariableNames:");
         checkStr((yyvsp[-6].str),  "classVariableNames:");
         checkStr((yyvsp[-4].str),  "poolDictionaries:");
         checkStr((yyvsp[-2].str), "category:");
+        free((yyvsp[-10].str));
+        free((yyvsp[-8].str));
+        free((yyvsp[-6].str));
+        free((yyvsp[-4].str));
+        free((yyvsp[-2].str));
         (yyval.header) = mkClassHeader((yyvsp[-11].uexpr), (yyvsp[-9].uexpr), (yyvsp[-7].uexpr), (yyvsp[-5].uexpr), (yyvsp[-3].uexpr), (yyvsp[-1].uexpr));}
-#line 1642 "parser.tab.c"
+#line 1648 "parser.tab.c"
     break;
 
   case 8: /* classcomment: id keysel string '!'  */
-#line 136 "parser.y"
+#line 142 "parser.y"
                                    {
             checkStr((yyvsp[-2].str), "comment:");
+            free((yyvsp[-2].str));
             (yyval.comment) = mkComment((yyvsp[-3].uexpr), (yyvsp[-1].uexpr)); }
-#line 1650 "parser.tab.c"
+#line 1657 "parser.tab.c"
     break;
 
   case 10: /* categories: categories category  */
-#line 144 "parser.y"
+#line 151 "parser.y"
                                   {
                 struct MethodCategory *last = (yyvsp[-1].category);
                 while (last->next)
                     last = last->next;
                 last->next = (yyvsp[0].category);
                 (yyval.category) = (yyvsp[-1].category);}
-#line 1661 "parser.tab.c"
+#line 1668 "parser.tab.c"
     break;
 
   case 11: /* category: '!' id keysel string '!' methods '!'  */
-#line 151 "parser.y"
+#line 158 "parser.y"
                                                {
                 checkStr((yyvsp[-4].str), "methodsFor:");
                 (yyval.category) = mkMethodCategory((yyvsp[-5].uexpr), (yyvsp[-3].uexpr), (yyvsp[-1].method)); }
-#line 1669 "parser.tab.c"
+#line 1676 "parser.tab.c"
     break;
 
   case 12: /* category: '!' id keysel string '!' '!'  */
-#line 154 "parser.y"
+#line 161 "parser.y"
                                        {
                 checkStr((yyvsp[-3].str), "methodsFor:");
                 (yyval.category) = mkMethodCategory((yyvsp[-4].uexpr), (yyvsp[-2].uexpr), NULL); }
-#line 1677 "parser.tab.c"
+#line 1684 "parser.tab.c"
     break;
 
   case 13: /* clsclsheader: id id keysel string '!'  */
-#line 161 "parser.y"
+#line 168 "parser.y"
                                       {
         checkStr((yyvsp[-2].str),"instanceVariableNames:");
         checkStr((yyvsp[-3].uexpr)->id.name, "class");
+        free((yyvsp[-2].str));
+        freeExprUnit((yyvsp[-3].uexpr));
         (yyval.ccheader) = mkClassClassHeader((yyvsp[-4].uexpr), (yyvsp[-1].uexpr));}
-#line 1686 "parser.tab.c"
+#line 1695 "parser.tab.c"
     break;
 
   case 15: /* clscategories: clscategories clscategory  */
-#line 170 "parser.y"
+#line 179 "parser.y"
                                          {
                 struct MethodCategory *last = (yyvsp[-1].category);
                 while (last->next)
                     last = last->next;
                 last->next = (yyvsp[0].category);
                 (yyval.category) = (yyvsp[-1].category);}
-#line 1697 "parser.tab.c"
+#line 1706 "parser.tab.c"
     break;
 
   case 16: /* clscategory: '!' id id keysel string '!' methods '!'  */
-#line 176 "parser.y"
+#line 185 "parser.y"
                                                      {
                 checkStr((yyvsp[-5].uexpr)->id.name, "class");
                 checkStr((yyvsp[-4].str), "methodsFor:");
                 (yyval.category) = mkMethodCategory((yyvsp[-6].uexpr), (yyvsp[-3].uexpr), (yyvsp[-1].method)); }
-#line 1706 "parser.tab.c"
+#line 1715 "parser.tab.c"
     break;
 
   case 17: /* clscategory: '!' id id keysel string '!' '!'  */
-#line 180 "parser.y"
+#line 189 "parser.y"
                                              {
                 checkStr((yyvsp[-4].uexpr)->id.name, "class");
                 checkStr((yyvsp[-3].str), "methodsFor:");
                 (yyval.category) = mkMethodCategory((yyvsp[-5].uexpr), (yyvsp[-2].uexpr), NULL); }
-#line 1715 "parser.tab.c"
+#line 1724 "parser.tab.c"
     break;
 
   case 19: /* methods: methods method  */
-#line 189 "parser.y"
+#line 198 "parser.y"
                         {
             struct Method *last = (yyvsp[-1].method);
             while (last->next)
                 last = last->next;
             last->next = (yyvsp[0].method);
             (yyval.method) = (yyvsp[-1].method);}
-#line 1726 "parser.tab.c"
+#line 1735 "parser.tab.c"
     break;
 
   case 20: /* method: message '!'  */
-#line 199 "parser.y"
+#line 208 "parser.y"
                                           { (yyval.method) = mkMethod((yyvsp[-1].message), NULL, NULL, NULL); }
-#line 1732 "parser.tab.c"
+#line 1741 "parser.tab.c"
     break;
 
   case 21: /* method: message exprs '!'  */
-#line 200 "parser.y"
+#line 209 "parser.y"
                                           { (yyval.method) = mkMethod((yyvsp[-2].message), NULL, NULL, (yyvsp[-1].uexpr)); }
-#line 1738 "parser.tab.c"
+#line 1747 "parser.tab.c"
     break;
 
   case 22: /* method: message temps exprs '!'  */
-#line 201 "parser.y"
+#line 210 "parser.y"
                                           { (yyval.method) = mkMethod((yyvsp[-3].message), NULL,   (yyvsp[-2].temp), (yyvsp[-1].uexpr)); }
-#line 1744 "parser.tab.c"
+#line 1753 "parser.tab.c"
     break;
 
   case 23: /* method: message primitive exprs '!'  */
-#line 202 "parser.y"
+#line 211 "parser.y"
                                           { (yyval.method) = mkMethod((yyvsp[-3].message), (yyvsp[-2].uexpr),   NULL, (yyvsp[-1].uexpr)); }
-#line 1750 "parser.tab.c"
+#line 1759 "parser.tab.c"
     break;
 
   case 24: /* method: message primitive temps exprs '!'  */
-#line 203 "parser.y"
+#line 212 "parser.y"
                                           { (yyval.method) = mkMethod((yyvsp[-4].message), (yyvsp[-3].uexpr),     (yyvsp[-2].temp), (yyvsp[-1].uexpr)); }
-#line 1756 "parser.tab.c"
+#line 1765 "parser.tab.c"
     break;
 
   case 25: /* primitive: '<' keysel integer '>'  */
-#line 205 "parser.y"
+#line 214 "parser.y"
                                   { (yyval.uexpr) = (yyvsp[-1].uexpr); }
-#line 1762 "parser.tab.c"
+#line 1771 "parser.tab.c"
     break;
 
   case 26: /* message: id  */
-#line 209 "parser.y"
+#line 218 "parser.y"
                        { (yyval.message) = mkUnaryMethodDef((yyvsp[0].uexpr)); }
-#line 1768 "parser.tab.c"
+#line 1777 "parser.tab.c"
     break;
 
   case 27: /* message: binsel id  */
-#line 210 "parser.y"
+#line 219 "parser.y"
                        { (yyval.message) = mkBinaryMethodDef((yyvsp[-1].binary), (yyvsp[0].uexpr)); }
-#line 1774 "parser.tab.c"
+#line 1783 "parser.tab.c"
     break;
 
   case 28: /* message: methodkeymsg  */
-#line 211 "parser.y"
+#line 220 "parser.y"
                        { (yyval.message) = mkKeywordMethodDef((yyvsp[0].keymsg)); }
-#line 1780 "parser.tab.c"
+#line 1789 "parser.tab.c"
     break;
 
   case 29: /* methodkeymsg: keysel id  */
-#line 213 "parser.y"
+#line 222 "parser.y"
                                { (yyval.keymsg) = mkKeywordMsg((yyvsp[-1].str), (yyvsp[0].uexpr)); }
-#line 1786 "parser.tab.c"
+#line 1795 "parser.tab.c"
     break;
 
   case 30: /* methodkeymsg: methodkeymsg keysel id  */
-#line 214 "parser.y"
+#line 223 "parser.y"
                                {
             struct KeywordMsg *new = mkKeywordMsg((yyvsp[-1].str), (yyvsp[0].uexpr));
             struct KeywordMsg *last = (yyvsp[-2].keymsg);
@@ -1794,296 +1803,296 @@ yyreduce:
                 last = last->next;
             last->next = new;
             (yyval.keymsg) = (yyvsp[-2].keymsg);}
-#line 1798 "parser.tab.c"
+#line 1807 "parser.tab.c"
     break;
 
   case 31: /* temps: '|' tempids '|'  */
-#line 225 "parser.y"
+#line 234 "parser.y"
                         { (yyval.temp) = (yyvsp[-1].temp); }
-#line 1804 "parser.tab.c"
+#line 1813 "parser.tab.c"
     break;
 
   case 32: /* tempids: id  */
-#line 226 "parser.y"
+#line 235 "parser.y"
                         { (yyval.temp) = mkTemp((yyvsp[0].uexpr)); }
-#line 1810 "parser.tab.c"
+#line 1819 "parser.tab.c"
     break;
 
   case 33: /* tempids: tempids id  */
-#line 227 "parser.y"
+#line 236 "parser.y"
                         { struct Temp *new = mkTemp((yyvsp[0].uexpr));
                           struct Temp *last = (yyval.temp);
                           while (last->next)
                               last = last->next;
                           last->next = new;
                           (yyval.temp) = (yyvsp[-1].temp);}
-#line 1821 "parser.tab.c"
+#line 1830 "parser.tab.c"
     break;
 
   case 34: /* exprs: expr  */
-#line 239 "parser.y"
+#line 248 "parser.y"
                         { (yyval.uexpr) = (yyvsp[0].uexpr); }
-#line 1827 "parser.tab.c"
+#line 1836 "parser.tab.c"
     break;
 
   case 35: /* exprs: '^' expr  */
-#line 240 "parser.y"
+#line 249 "parser.y"
                         { (yyval.uexpr) = (yyvsp[0].uexpr); (yyval.uexpr)->returns = 1; }
-#line 1833 "parser.tab.c"
+#line 1842 "parser.tab.c"
     break;
 
   case 36: /* exprs: exprs '.'  */
-#line 241 "parser.y"
+#line 250 "parser.y"
                         { (yyval.uexpr) = (yyvsp[-1].uexpr); }
-#line 1839 "parser.tab.c"
+#line 1848 "parser.tab.c"
     break;
 
   case 37: /* exprs: exprs '.' expr  */
-#line 242 "parser.y"
+#line 251 "parser.y"
                         { addExpr((yyvsp[-2].uexpr), (yyvsp[0].uexpr));                  (yyval.uexpr) = (yyvsp[-2].uexpr); }
-#line 1845 "parser.tab.c"
+#line 1854 "parser.tab.c"
     break;
 
   case 38: /* exprs: exprs '^' expr  */
-#line 243 "parser.y"
+#line 252 "parser.y"
                         { addExpr((yyvsp[-2].uexpr), (yyvsp[0].uexpr)); (yyvsp[0].uexpr)->returns = 1; (yyval.uexpr) = (yyvsp[-2].uexpr); }
-#line 1851 "parser.tab.c"
+#line 1860 "parser.tab.c"
     break;
 
   case 39: /* expr: unit  */
-#line 248 "parser.y"
+#line 257 "parser.y"
                            { (yyval.uexpr) = (yyvsp[0].uexpr);}
-#line 1857 "parser.tab.c"
+#line 1866 "parser.tab.c"
     break;
 
   case 40: /* expr: expr2  */
-#line 249 "parser.y"
+#line 258 "parser.y"
                            { (yyval.uexpr) = (yyvsp[0].uexpr);}
-#line 1863 "parser.tab.c"
+#line 1872 "parser.tab.c"
     break;
 
   case 41: /* expr: id ST_ASSIGN expr2  */
-#line 250 "parser.y"
+#line 259 "parser.y"
                            { (yyvsp[0].uexpr)->assignsTo = (yyvsp[-2].uexpr); (yyval.uexpr) = (yyvsp[0].uexpr); }
-#line 1869 "parser.tab.c"
+#line 1878 "parser.tab.c"
     break;
 
   case 42: /* expr: id ST_ASSIGN unit  */
-#line 251 "parser.y"
+#line 260 "parser.y"
                            { (yyvsp[0].uexpr)->assignsTo = (yyvsp[-2].uexpr); (yyval.uexpr) = (yyvsp[0].uexpr); }
-#line 1875 "parser.tab.c"
+#line 1884 "parser.tab.c"
     break;
 
   case 46: /* expr2: msgexpr  */
-#line 257 "parser.y"
+#line 266 "parser.y"
                         { (yyval.uexpr) = (yyvsp[0].uexpr); }
-#line 1881 "parser.tab.c"
+#line 1890 "parser.tab.c"
     break;
 
   case 47: /* expr2: expr2 ';' id  */
-#line 258 "parser.y"
+#line 267 "parser.y"
                         { addUnaryCascade((yyvsp[-2].uexpr), (yyvsp[0].uexpr));   (yyval.uexpr) = (yyvsp[-2].uexpr); }
-#line 1887 "parser.tab.c"
+#line 1896 "parser.tab.c"
     break;
 
   case 48: /* expr2: expr2 ';' binmsg  */
-#line 259 "parser.y"
+#line 268 "parser.y"
                         { addBinaryCascade((yyvsp[-2].uexpr), (yyvsp[0].binmsg));  (yyval.uexpr) = (yyvsp[-2].uexpr); }
-#line 1893 "parser.tab.c"
+#line 1902 "parser.tab.c"
     break;
 
   case 49: /* expr2: expr2 ';' keymsg  */
-#line 260 "parser.y"
+#line 269 "parser.y"
                         { addKeywordCascade((yyvsp[-2].uexpr), (yyvsp[0].keymsg)); (yyval.uexpr) = (yyvsp[-2].uexpr); }
-#line 1899 "parser.tab.c"
+#line 1908 "parser.tab.c"
     break;
 
   case 50: /* unaryexpr: unit id  */
-#line 265 "parser.y"
+#line 274 "parser.y"
                         { (yyval.uexpr) = mkUnaryExpr((yyvsp[-1].uexpr), mkUnaryMsg((yyvsp[0].uexpr))); }
-#line 1905 "parser.tab.c"
+#line 1914 "parser.tab.c"
     break;
 
   case 51: /* unaryexpr: unaryexpr id  */
-#line 266 "parser.y"
+#line 275 "parser.y"
                         { addUnaryMsg((yyvsp[-1].uexpr), mkUnaryMsg((yyvsp[0].uexpr))); (yyval.uexpr) = (yyvsp[-1].uexpr); }
-#line 1911 "parser.tab.c"
+#line 1920 "parser.tab.c"
     break;
 
   case 54: /* binexpr: prim binmsg  */
-#line 272 "parser.y"
+#line 281 "parser.y"
                            { (yyval.uexpr) = mkBinaryExpr((yyvsp[-1].uexpr), (yyvsp[0].binmsg)); }
-#line 1917 "parser.tab.c"
+#line 1926 "parser.tab.c"
     break;
 
   case 55: /* binmsg: binsel prim  */
-#line 273 "parser.y"
+#line 282 "parser.y"
                            { (yyval.binmsg) = mkBinaryMsg((yyvsp[-1].binary), (yyvsp[0].uexpr)); }
-#line 1923 "parser.tab.c"
+#line 1932 "parser.tab.c"
     break;
 
   case 56: /* binmsg: binmsg binsel prim  */
-#line 274 "parser.y"
+#line 283 "parser.y"
                            { addBinaryMsg((yyvsp[-2].binmsg), mkBinaryMsg((yyvsp[-1].binary), (yyvsp[0].uexpr))); (yyval.binmsg) = (yyvsp[-2].binmsg); }
-#line 1929 "parser.tab.c"
+#line 1938 "parser.tab.c"
     break;
 
   case 60: /* keyexpr: prim2 keymsg  */
-#line 280 "parser.y"
+#line 289 "parser.y"
                             { (yyval.uexpr) = mkKeywordExpr((yyvsp[-1].uexpr),(yyvsp[0].keymsg)); }
-#line 1935 "parser.tab.c"
+#line 1944 "parser.tab.c"
     break;
 
   case 61: /* keymsg: keysel prim2  */
-#line 281 "parser.y"
+#line 290 "parser.y"
                             { (yyval.keymsg) = mkKeywordMsg((yyvsp[-1].str), (yyvsp[0].uexpr)); }
-#line 1941 "parser.tab.c"
+#line 1950 "parser.tab.c"
     break;
 
   case 62: /* keymsg: keymsg keysel prim2  */
-#line 282 "parser.y"
+#line 291 "parser.y"
                             { addKeywordMsg((yyvsp[-2].keymsg),mkKeywordMsg((yyvsp[-1].str), (yyvsp[0].uexpr))); (yyval.keymsg) = (yyvsp[-2].keymsg);}
-#line 1947 "parser.tab.c"
+#line 1956 "parser.tab.c"
     break;
 
   case 63: /* block: '[' ']'  */
-#line 287 "parser.y"
+#line 296 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr(NULL, NULL, NULL);}
-#line 1953 "parser.tab.c"
+#line 1962 "parser.tab.c"
     break;
 
   case 64: /* block: '[' exprs ']'  */
-#line 288 "parser.y"
+#line 297 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr(NULL, NULL, (yyvsp[-1].uexpr));}
-#line 1959 "parser.tab.c"
+#line 1968 "parser.tab.c"
     break;
 
   case 65: /* block: '[' temps exprs ']'  */
-#line 289 "parser.y"
+#line 298 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr(NULL, (yyvsp[-2].temp),   (yyvsp[-1].uexpr));}
-#line 1965 "parser.tab.c"
+#line 1974 "parser.tab.c"
     break;
 
   case 66: /* block: '[' blockargs ']'  */
-#line 290 "parser.y"
+#line 299 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr((yyvsp[-1].blockarg),   NULL, NULL);}
-#line 1971 "parser.tab.c"
+#line 1980 "parser.tab.c"
     break;
 
   case 67: /* block: '[' blockargs '|' exprs ']'  */
-#line 291 "parser.y"
+#line 300 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr((yyvsp[-3].blockarg),   NULL, (yyvsp[-1].uexpr));}
-#line 1977 "parser.tab.c"
+#line 1986 "parser.tab.c"
     break;
 
   case 68: /* block: '[' blockargs '|' temps exprs ']'  */
-#line 292 "parser.y"
+#line 301 "parser.y"
                                          { (yyval.uexpr) = mkBlockExpr((yyvsp[-4].blockarg),   (yyvsp[-2].temp),   (yyvsp[-1].uexpr));}
-#line 1983 "parser.tab.c"
+#line 1992 "parser.tab.c"
     break;
 
   case 69: /* blockargs: colonvar  */
-#line 294 "parser.y"
+#line 303 "parser.y"
                               { (yyval.blockarg) = mkBlockArg((yyvsp[0].str)); }
-#line 1989 "parser.tab.c"
+#line 1998 "parser.tab.c"
     break;
 
   case 70: /* blockargs: blockargs colonvar  */
-#line 295 "parser.y"
+#line 304 "parser.y"
                               { addBlockArg((yyvsp[-1].blockarg), mkBlockArg((yyvsp[0].str))); (yyval.blockarg) = (yyvsp[-1].blockarg); }
-#line 1995 "parser.tab.c"
+#line 2004 "parser.tab.c"
     break;
 
   case 71: /* arrayconst: '#' array  */
-#line 300 "parser.y"
+#line 309 "parser.y"
                       { (yyval.uexpr) = mkArrayConst((yyvsp[0].uexpr)); }
-#line 2001 "parser.tab.c"
+#line 2010 "parser.tab.c"
     break;
 
   case 72: /* array: '(' arrayelements ')'  */
-#line 301 "parser.y"
+#line 310 "parser.y"
                               { (yyval.uexpr) = mkArray((yyvsp[-1].uexpr)); }
-#line 2007 "parser.tab.c"
+#line 2016 "parser.tab.c"
     break;
 
   case 73: /* array: '(' ')'  */
-#line 302 "parser.y"
+#line 311 "parser.y"
                               { (yyval.uexpr) = NULL; }
-#line 2013 "parser.tab.c"
+#line 2022 "parser.tab.c"
     break;
 
   case 76: /* arrayelements: arrayelement  */
-#line 306 "parser.y"
+#line 315 "parser.y"
                               { (yyval.uexpr) = (yyvsp[0].uexpr); }
-#line 2019 "parser.tab.c"
+#line 2028 "parser.tab.c"
     break;
 
   case 77: /* arrayelements: arrayelements arrayelement  */
-#line 307 "parser.y"
+#line 316 "parser.y"
                                       {
             struct ExprUnit *last = (yyvsp[-1].uexpr);
             while (last->next) last = last->next;
             last->next = (yyvsp[0].uexpr);
             (yyval.uexpr) = (yyvsp[-1].uexpr); }
-#line 2029 "parser.tab.c"
+#line 2038 "parser.tab.c"
     break;
 
   case 81: /* unit: '(' expr ')'  */
-#line 315 "parser.y"
+#line 324 "parser.y"
                                            { (yyval.uexpr) = (yyvsp[-1].uexpr);}
-#line 2035 "parser.tab.c"
+#line 2044 "parser.tab.c"
     break;
 
   case 87: /* integer: INTEGER  */
-#line 319 "parser.y"
+#line 328 "parser.y"
                       { (yyval.uexpr) = mkIntExpr(strdup(yytext)); }
-#line 2041 "parser.tab.c"
+#line 2050 "parser.tab.c"
     break;
 
   case 88: /* string: STRING  */
-#line 320 "parser.y"
+#line 329 "parser.y"
                       { (yyval.uexpr) = mkStringExpr(st_string); }
-#line 2047 "parser.tab.c"
+#line 2056 "parser.tab.c"
     break;
 
   case 89: /* charconst: CHARCONST  */
-#line 321 "parser.y"
+#line 330 "parser.y"
                       { (yyval.uexpr) = mkCharExpr(strdup(yytext)); }
-#line 2053 "parser.tab.c"
+#line 2062 "parser.tab.c"
     break;
 
   case 90: /* symconst: SYMCONST  */
-#line 322 "parser.y"
+#line 331 "parser.y"
                       { (yyval.uexpr) = mkSymbolExpr(strdup(yytext)); }
-#line 2059 "parser.tab.c"
+#line 2068 "parser.tab.c"
     break;
 
   case 91: /* id: IDENTIFIER  */
-#line 323 "parser.y"
+#line 332 "parser.y"
                       { (yyval.uexpr) = mkIdExpr(strdup(yytext)); }
-#line 2065 "parser.tab.c"
+#line 2074 "parser.tab.c"
     break;
 
   case 92: /* keysel: KEYWORD  */
-#line 324 "parser.y"
+#line 333 "parser.y"
                       { (yyval.str) = strdup(yytext); }
-#line 2071 "parser.tab.c"
+#line 2080 "parser.tab.c"
     break;
 
   case 93: /* colonvar: COLONVAR  */
-#line 325 "parser.y"
+#line 334 "parser.y"
                       { (yyval.str) = strdup(yytext); }
-#line 2077 "parser.tab.c"
+#line 2086 "parser.tab.c"
     break;
 
   case 94: /* binsel: binops  */
-#line 327 "parser.y"
+#line 336 "parser.y"
                { (yyval.binary) = st_op; }
-#line 2083 "parser.tab.c"
+#line 2092 "parser.tab.c"
     break;
 
 
-#line 2087 "parser.tab.c"
+#line 2096 "parser.tab.c"
 
       default: break;
     }
@@ -2308,7 +2317,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 332 "parser.y"
+#line 341 "parser.y"
 
 
 void
@@ -2639,6 +2648,19 @@ mkMethodCategory(
     free(category);
     return c;
 }
+void freeExprUnit(struct ExprUnit *expr)
+{
+    switch (expr->type) {
+        case ST_ID:
+            free(expr->id.name);
+            free(expr);
+            break;
+        case ST_STRING:
+            free(expr->string.value);
+            free(expr);
+            break;
+    }
+}
 
 struct ClassFile*
 mkFile(
@@ -2650,12 +2672,35 @@ mkFile(
 {
     struct ClassFile *f = malloc(sizeof(struct ClassFile));
     f->header = head;
-    f->comment = comment;
+
+    assert(strcmp(comment->className, &head->className[1]) == 0);
+    f->comment = comment->str;
+    free(comment);
     f->categories = category;
     f->classHeader = clshead;
     f->classCategories = clscategories;
     parsed_file = f;
     return f;
+}
+
+int tokenizeStString(char *str, char ***dst)
+{
+    int tsize = 0;
+    int tnum  = 0;
+    char **tokens = NULL;
+    char  *tok;
+    tok = strtok(str, " ");
+    while (tok) {
+        if (tsize == tnum) {
+            tokens = realloc(tokens, sizeof(char*) + 10);
+            tsize += 10;
+        }
+        tokens[tnum++] = strdup(tok);
+        tok = strtok(NULL, " ");
+    }
+    *dst = tokens;
+    return tnum;
+
 }
 
 struct ClassHeader*
@@ -2668,32 +2713,30 @@ mkClassHeader(
         struct ExprUnit *category)
 {
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
-    h->super = super;
-    h->className = classname;
-    h->instsVarNamesCount = 0;
-    int i;
-    int len = strlen(instvars->string.value);
-    for (i = 0; i < len; i++) {
-        if (instvars->string.value[i] == ' ') h->instsVarNamesCount ++;
-    }
-    char *tok;
-    i = 0;
-    if (h->instsVarNamesCount) {
-        h->instsVarNames = malloc(sizeof(char*) * h->instsVarNamesCount);
-        tok = strtok(instvars->string.value, " ");
-        while (tok) {
-            h->instsVarNames[i] = tok;
-            i++;
-            tok = strtok(NULL, " ");
-        }
-    } else {
-        h->instsVarNames = NULL;
-    }
-    h->classVarNames = classvars->string.value;
-    h->poolDict = pooldict->string.value;
-    h->category = category->string.value;
-    free(instvars); free(classvars); free(pooldict);
-    free(category);
+
+    assert((super->type    == ST_ID) && (!super->next));
+    h->super = super->id.name;
+    free(super);
+
+    assert(classname->type == ST_SYMBOL);
+    h->className = classname->symbol.value;
+    free(classname);
+
+    assert(instvars->type  == ST_STRING);
+    h->instsVarNamesCount = tokenizeStString(instvars->string.value, &h->instsVarNames);
+    freeExprUnit(instvars);
+
+    assert(classvars->type == ST_STRING);
+    h->classVarNamesCount = tokenizeStString(classvars->string.value, &h->classVarNames);
+    freeExprUnit(classvars);
+
+    assert(pooldict->type  == ST_STRING);
+    h->poolDictsCount = tokenizeStString(pooldict->string.value, &h->poolDicts);
+    freeExprUnit(pooldict);
+
+    assert(category->type  == ST_STRING);
+    h->category = strdup(category->string.value);
+    freeExprUnit(category);
     return h;
 }
 
@@ -2703,8 +2746,14 @@ mkComment(
         struct ExprUnit *comment)
 {
     struct ClassComment *c = malloc(sizeof(struct ClassComment));
-    c->className = className;
-    c->comment = comment->string.value;
+
+    assert(className->type == ST_ID);
+    c->className = strdup(className->id.name);
+    freeExprUnit(className);
+
+    assert(comment->type == ST_STRING);
+    c->str = strdup(comment->string.value);
+    freeExprUnit(comment);
     return c;
 }
 
@@ -2734,8 +2783,14 @@ mkClassClassHeader(
         struct ExprUnit *instvars)
 {
     struct ClassClassHeader *c = malloc(sizeof(struct ClassClassHeader));
-    c->className = name;
-    c->instVarNames = instvars->string.value;
+    assert(name->type     == ST_ID);
+    c->className = strdup(name->id.name);
+    freeExprUnit(name);
+
+    assert(instvars->type == ST_STRING);
+    c->instVarNamesCount = tokenizeStString(instvars->string.value, &c->instVarNames);
+    freeExprUnit(instvars);
+
     return c;
 }
 

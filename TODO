@@ -1,7 +1,10 @@
+- nettoyage:
+    - enlever de ExprUnit ce qui semble basique id int char ... et les transformer
+    en ExprUnit quand un message arrive sur eux, ou en Expression (^id ou id := id.);
+    - bien mettre en valeur l'arboressence dans l'API et es ExprUnits qu'on
+    sache bien ce qu'on est en train de voir (la c'est le bordel).
 
 - tenter lire Object.st et ajouter le bazard restant
     . ajouter les initalize (Object initialize!) en fin de fichier
-- compiler une classe pour un interpreteur simpliste registre based et voir
-comment ça fonctionne
 - créer un object memory et faire un running live smalltalk
 

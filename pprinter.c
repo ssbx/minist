@@ -1,4 +1,5 @@
 #include "pprinter.h"
+#include "bytecodes.h"
 #include <stdio.h>
 
 
@@ -194,6 +195,13 @@ static void print_method(struct Method* m) {
             break;
     }
 
+    printf("    \"\n");
+    for (int i = 0; i < m->bytecount; i++) {
+        printf("    <%i> %s\n", m->bytecodes[i], bytecodes_getBytecodeDescription(m->bytecodes[i]));
+    }
+    printf("    \"\n");
+
+
     if (m->prim) {
         printf( "    <primitive: %s>\n", m->prim->integer.value);
     }
@@ -223,30 +231,34 @@ static void print_method(struct Method* m) {
         }
     }
     printf( " ! ");
-    printf("\n\"");
-    for (int i = 0; i < m->bytecount; i++) {
-        printf("    %i\n", m->bytecodes[i]);
-    }
-    printf( " \"\n");
 }
 
 void pprinter_print(struct ClassFile *cf) {
     struct ClassHeader *h = cf->header;
     printf( "-----\n");
-    printf( "%s subclass: %s\n", h->super->id.name, h->className->symbol.value);
+    printf( "%s subclass: %s\n", h->super, h->className);
     printf( "\tinstanceVariableNames: '");
     int i;
     for (i=0; i < h->instsVarNamesCount; i++) {
         printf(" %s ", h->instsVarNames[i]);
     }
     printf( "'\n");
-    printf( "\tclassVariableNames: '%s'\n", h->classVarNames);
-    printf( "\tpooldictionary: '%s'\n", h->poolDict);
+
+    printf( "\tclassVariableNames: '");
+    for (i=0; i< h->classVarNamesCount; i++) {
+        printf(" %s ", h->classVarNames[i]);
+    }
+    printf("'\n");
+
+    printf( "\tpoolDictionaries: '");
+    for (i=0; i < h->poolDictsCount; i++) {
+        printf(" %s ", h->poolDicts[i]);
+    }
+    printf("'\n");
     printf( "\tcategory: '%s'!\n", h->category);
 
     printf( "\n");
-    struct ClassComment *c = cf->comment;
-    printf( "%s comment: '%s'!\n", c->className->id.name, c->comment);
+    printf( "%s comment: '%s'!\n", cf->header->className, cf->comment);
 
     printf( "\n");
     struct MethodCategory *m = cf->categories;
@@ -264,8 +276,12 @@ void pprinter_print(struct ClassFile *cf) {
     if (cf->classHeader) {
         printf( "\"= = = == = \"!\n");
         struct ClassClassHeader *cch = cf->classHeader;
-        printf( "%s class instanceVariableNames: '%s'!\n\n",
-                cch->className->id.name, cch->instVarNames);
+        printf( "%s class instanceVariableNames: '", cch->className);
+        for (int x= 0; x < cch->instVarNamesCount; x++) {
+            printf(" %s ", cch->instVarNames[x]);
+        }
+        printf( "' !\n");
+
         struct MethodCategory * mmm = cf->classCategories;
         while (mmm) {
             printf( "!%s class methodsFor: '%s'!\n\n", mmm->classname->id.name, mmm->name);
