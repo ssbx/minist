@@ -1,3 +1,11 @@
+/*
+ * nodes.h
+ *
+ * This file contains all structures used by the parser the generate a tree of
+ * nodes representing a smalltalk 80 class file. Notable users of the generated
+ * tree, are compiler and pprinter.
+ *
+ */
 #ifndef PARSER_NODES
 #define PARSER_NODES
 struct ClassHeader;
@@ -13,6 +21,7 @@ struct UnaryMsg;
 struct BinaryMsg;
 struct Cascade;
 
+
 /*
  * Represent one file of a smalltalk class.
  */
@@ -24,41 +33,66 @@ struct ClassFile {
     char                    *comment;
 };
 
+
+/*
+ * Object subclass: #Rectangle
+ *    instanceVariableNames: 'origin corner '
+ *    classVariableNames: ''
+ *    poolDictionaries: ''
+ *    category: 'Graphics-Primitives'!
+ */
 struct ClassHeader {
-    char *super;
-    char *className;
+    char  *super;
+    char  *className;
     int    instsVarNamesCount;
     char **instsVarNames;
     int    classVarNamesCount;
     char **classVarNames;
     int    poolDictsCount;
     char **poolDicts;
-    char *category;
+    char  *category;
 };
 
+
+/*
+ * Rectangle comment: 'comment'!
+ */
 struct ClassComment {
     char *className;
     char *str;
 };
 
+
+/*
+ * !Rectangle methodsFor: 'accessing'!
+ */
+struct MethodCategory {
+    struct MethodCategory *next;
+    char                  *name;
+    struct ExprUnit       *classname; // wtf should be string
+    struct Method         *methods;
+};
+
+
+/*
+ * Rectangle class
+ *    instanceVariableNames: '' !
+ */
 struct ClassClassHeader {
     char  *className;
     int    instVarNamesCount;
     char **instVarNames;
 };
 
-struct Temp {
-    struct Temp *next;
-    struct ExprUnit *name; // TODO must be simple *char
-};
 
-struct MethodCategory {
-    struct MethodCategory *next;
-    char* name;
-    struct ExprUnit* classname; // wtf should be string
-    struct Method* methods;
-};
-
+/*
+ * Represent the entire method:
+ *
+ * myMethod             -> def
+ *      | a b c |       -> temps
+ *      <primitive: 1>  -> prim
+ *      ^ a             -> exprs
+ */
 struct Method {
     struct MethodDef *def;
     struct Temp      *temps;
@@ -72,6 +106,10 @@ struct Method {
     struct Method *next;
 };
 
+
+/*
+ * Either unary, binary or keyword. XXX Does not look nice (union?).
+ */
 struct MethodDef {
     int type;
     struct ExprUnit *unary;
@@ -82,36 +120,20 @@ struct MethodDef {
     struct KeywordMsg *keys;
 };
 
-enum {
-    CASCADE_UNARY,
-    CASCADE_BINARY,
-    CASCADE_KEYWORD,
-};
-struct Cascade {
-    int type;
-    union {
-        struct ExprUnit* msg;
-    } unary;
-    union {
-        struct BinaryMsg *msg;
-    } binary;
-    union {
-        struct KeywordMsg *msg;
-    } keyword;
-    struct Cascade *next;
+
+/*
+ * Temporary variables:
+ *
+ *  | var1 var2 var3 |
+ */
+struct Temp {
+    struct Temp     *next;
+    struct ExprUnit *name; // XXX should be simple *char
 };
 
-struct BinaryMsg {
-    int op;
-    struct ExprUnit* arg;
-    struct BinaryMsg *next;
-};
 
-struct UnaryMsg {
-    struct ExprUnit *msg;
-    struct UnaryMsg *next;
-};
-
+/* XXX Should be used as a kind of ExprUnit that can be returned or assigned.
+ * XXX See ExprUnit comments
 struct Expression {
     int    type;
     struct Expression *next;
@@ -119,6 +141,12 @@ struct Expression {
     int    returns;
     struct ExprUnit* assignsTo;
 };
+*/
+
+
+/*
+ * The big thing. XXX This needs to be clarified.
+ */
 enum {
     ST_ID,
     ST_UNIT,
@@ -136,12 +164,11 @@ enum {
 
 struct ExprUnit {
     int type;
-    struct Cascade *cascade;
     union {
 
         struct {
             char *name;
-        } id;
+        } id; /* XXX does an id needs to be a ExprUnit? */
 
         struct {
             int op;
@@ -178,20 +205,72 @@ struct ExprUnit {
             struct ExprUnit *head;
         } array;
     };
-    struct ExprUnit *next;
-    int    returns;
-    struct ExprUnit *assignsTo;
+    struct Cascade  *cascade;   /* XXX does this belong here? */
+    struct ExprUnit *next;      /* XXX does an ExprUnit have next? */
+    int              returns;   /* XXX sould be in Expression */
+    struct ExprUnit *assignsTo; /* XXX should be in Expression */
 };
 
-struct BlockArg {
-    struct BlockArg *next;
-    char *name;
+
+/*
+ * Chain of messages of type binary/unary
+ */
+struct BinaryMsg {
+    int op;
+    struct ExprUnit  *arg;
+    struct BinaryMsg *next;
+};
+struct UnaryMsg {
+    struct ExprUnit *msg;
+    struct UnaryMsg *next;
 };
 
+
+/*
+ * A Single keyword message
+ */
 struct KeywordMsg {
     struct KeywordMsg *next;
-    char *key;
-    struct ExprUnit *arg; /* todo expr */
+    char              *key;
+    struct ExprUnit   *arg;
+};
+
+
+/*
+ * Cascades
+ *
+ * myObj msg1;
+ *       msg2;
+ *       msg3.
+ */
+enum {
+    CASCADE_UNARY,
+    CASCADE_BINARY,
+    CASCADE_KEYWORD,
+};
+
+struct Cascade {
+    int type;
+    union {
+        struct ExprUnit* msg;
+    } unary;
+    union {
+        struct BinaryMsg *msg;
+    } binary;
+    union {
+        struct KeywordMsg *msg;
+    } keyword;
+    struct Cascade *next;
+};
+
+
+/*
+ * Block arguments. XXX Might share something with struct Temp?
+ * [ :arg1 :arg2 | body... ]
+ */
+struct BlockArg {
+    char            *name;
+    struct BlockArg *next;
 };
 
 #endif // PARSER_NODES
