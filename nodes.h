@@ -1,6 +1,5 @@
 #ifndef PARSER_NODES
 #define PARSER_NODES
-
 struct ClassHeader;
 struct ClassComment;
 struct MethodCategory;
@@ -59,7 +58,12 @@ struct Method {
     struct Temp      *temps;
     struct ExprUnit  *prim;
     struct ExprUnit  *exprs;
-    struct Method *next;
+
+    int   buffsize;
+    int   bytecount;
+    unsigned char *bytecodes;
+
+    struct Method    *next;
 };
 
 struct MethodDef {

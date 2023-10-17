@@ -1,5 +1,5 @@
 # the default target
-run:
+all::
 
 # install configuration
 prefix     = $(HOME)
@@ -7,6 +7,7 @@ bindir     = $(prefix)/bin
 libexecdir = $(prefix)/libexec
 
 SHELL = /bin/sh
+PROG  = minist-img-gen
 BISON = bison
 FLEX  = flex
 CC    = cc
@@ -15,41 +16,53 @@ RM    = rm -f
 .SUFFIXES:
 .SUFFIXES: .c .o
 
-# optional flags that can be altered by the user
+# optional CFLAGS that can be altered by the user
 CFLAGS    = -Wall -Wextra
-
-# The used cflags containings our mandatory cflags
 ALLCFLAGS =
 ALLCFLAGS = -I. $(CFLAGS)
 
+# optional BISONFLAGS that can be altered by the user
+BISONFLAGS = --color -Wall -Wother -Wcounterexamples
+ALLBISONFLAGS =
+ALLBISONFLAGS = $(BISONFLAGS)
+
+# optional FLEXFLAGS that can be altered by the user
+FLEXFLAGS =
+ALLFLEXFLAGS =
+ALLFLEXFLAGS = --outfile=scanner.yy.c --header-file=scanner.yy.h $(FLEXFLAGS)
+
 # all objects. Clear guard and definition
 OBJECTS =
-OBJECTS = parse.tab.o scan.yy.o main.o
+OBJECTS = parser.tab.o scanner.yy.o compiler.o pprinter.o $(PROG).o
 
-.PHONY: run clean
+# cleanfiles
+CLEANFILES =
+CLEANFILES = $(PROG) *.o parser.tab.h parser.tab.c scanner.yy.h scanner.yy.c
 
-run: minist-img-gen
-	./minist-img-gen files/Test.st
+include depends.mk
 
-minist-img-gen: $(OBJECTS)
-	$(CC) -o minist-img-gen $(OBJECTS)
+.PHONY: run clean depends
+
+all:: run
+
+run: $(PROG)
+	./$(PROG) files/Test.st
+
+$(PROG): $(OBJECTS)
+	$(CC) -o $(PROG) $(OBJECTS)
 
 clean:
-	$(RM) parse.tab.h parse.tab.c scan.yy.h scan.yy.c *.o minist-img-gen
+	$(RM) $(CLEANFILES)
 
-scan.yy.c scan.yy.y: scan.l parse.tab.h
-	$(FLEX) --outfile=scan.yy.c --header-file=scan.yy.h scan.l
+scanner.yy.c scanner.yy.h: scanner.l parser.tab.h
+	$(FLEX) $(ALLFLEXFLAGS) scanner.l
 
-parse.tab.c parse.tab.h: parse.y nodes.h
-	$(BISON) --color -Wall -Wother -Wcounterexamples -d parse.y
+parser.tab.c parser.tab.h: parser.y nodes.h
+	$(BISON) $(ALLBISONFLAGS) -d parser.y
 
 .c.o:
 	$(CC) $(CPPFLAGS) -c $(ALLCFLAGS) $<
 
-# Do not edit bellow >>>. Delete the last target definition lines and run
-# $ cc -MM *.c >> Makefile
-# >>>
-main.o: main.c scan.yy.h parse.tab.h nodes.h
-parse.tab.o: parse.tab.c nodes.h parse.tab.h
-scan.yy.o: scan.yy.c parse.tab.h
+depends: scanner.yy.h parser.tab.h
+	$(CC) -MM *.c > depends.mk
 

@@ -737,6 +737,10 @@ mkMethod(
 {
     struct Method *m = malloc(sizeof(struct Method));
     m->next = NULL;
+    m->buffsize  = 0;
+    m->bytecount = 0;
+    m->bytecodes = NULL;
+    m->buffsize = 0;
     m->prim = prim;
     m->temps = t;
     m->exprs = exprs;
