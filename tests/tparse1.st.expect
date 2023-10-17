@@ -1,17 +1,3 @@
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
-compiler.c 92 error
 -----
 Object subclass: #Rectangle
 	instanceVariableNames: ' origin  corner '
@@ -26,22 +12,12 @@ Object subclass: #Rectangle
 
 
 test
-    "
-    <176> send: +
-    <177> send: -
-    <184> send: *
-    <176> send: +
-    <176> send: +
-    "
      b  := ( a  +  b  -  c  *  d ) .
      a  .
     (( a  b c) +  x  + ( a  d e f)) .
  ! 
 
 othertest
-    "
-    <124> returnTop
-    "
     | a b c |
      a  := 'hello' .
      a  := 'hello' .
@@ -52,27 +28,15 @@ othertest
  ! 
 
 test: a put: b 
-    "
-    <124> returnTop
-    "
     ^ ((( c  b) +  c ) at: ( x  y) put: ( y  /  a )) .
  ! 
 
 othertest
-    "
-    <124> returnTop
-    "
     (( a  +  b ) put: ( c  +  e ) at:  x ) .
     ^  a  .
  ! 
 
 cascade
-    "
-    <176> send: +
-    <176> send: +
-    <176> send: +
-    <176> send: +
-    "
     ( a  b c ;  b  ;  d  ;  c  ;  +  y  ;  at:  x  put:  this ) .
     ( a  +  b  ;  -  c ) .
     ( a  +  b  +  c  ;  -  c ) .
@@ -81,9 +45,6 @@ cascade
  ! 
 
 + a
-    "
-    <124> returnTop
-    "
     ( y  put: (( c  asString) +  E ) at: ( y  +  b )) .
     ^ ( c  put:  a ) .
  ! !

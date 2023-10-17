@@ -10,7 +10,7 @@ MINISTTMPOUT=/tmp/minist-tests
 
 for i in $PARSETESTFILES; do
     echo -n "running parse test on $i: "
-    $MINISTPROG $i > $MINISTTMPOUT
+    $MINISTPROG -p $i > $MINISTTMPOUT
     diff $i.expect $MINISTTMPOUT > /dev/null 2>&1 && echo "SUCCESS" || echo "FAILED"
 done
 
