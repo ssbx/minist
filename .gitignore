@@ -1,7 +1,7 @@
-parse.tab.c
-parse.tab.h
-scan.yy.c
-scan.yy.h
+parser.tab.c
+parser.tab.h
+scanner.yy.c
+scanner.yy.h
 *.o
 minist-img-gen
 *.swp
