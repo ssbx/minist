@@ -1,0 +1,518 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+#Rectangle comment: 'I usually represent a rectangular area on the screen.  Arithmetic functions take points as arguments and carry out scaling and translating operations to create new Rectangles.  Rectangle functions create new Rectangles by determining intersections of rectangles with rectangles. '!
+
+!Rectangle methodsFor: 'accessing'!
+
+
+
+area
+    "
+    <184> send: *
+    <124> returnTop
+    "
+    ^ (( self  width) * ( self  height)) .
+ ! 
+
+bottom
+    "
+    <124> returnTop
+    "
+    ^ ( corner  y) .
+ ! 
+
+bottom: anInteger 
+    "
+    "
+    ( corner  y:  anInteger ) .
+ ! 
+
+bottomCenter
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( self  center x) @ ( self  bottom)) .
+ ! 
+
+bottomLeft
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( origin  x) @ ( corner  y)) .
+ ! 
+
+bottomRight
+    "
+    <1> pushRcvr: 1
+    "
+    ^  corner  .
+ ! 
+
+bottomRight: bottomRightPoint 
+    "
+    <16> unknwon bytecode
+    "
+     corner  :=  bottomRightPoint  .
+ ! 
+
+center
+    "
+    <176> send: +
+    <119> pushConstant: 2
+    <186> send: //
+    <124> returnTop
+    "
+    ^ (( self  topLeft) + ( self  bottomRight)  2) .
+ ! 
+
+corner
+    "
+    <1> pushRcvr: 1
+    "
+    ^  corner  .
+ ! 
+
+corner: cornerPoint 
+    "
+    <16> unknwon bytecode
+    "
+     corner  :=  cornerPoint  .
+ ! 
+
+extent
+    "
+    <1> pushRcvr: 1
+    <0> pushRcvr: 0
+    <177> send: -
+    <124> returnTop
+    "
+    ^ ( corner  -  origin ) .
+ ! 
+
+extent: extentPoint 
+    "
+    <0> pushRcvr: 0
+    <16> unknwon bytecode
+    <176> send: +
+    "
+     corner  := ( origin  +  extentPoint ) .
+ ! 
+
+height
+    "
+    <177> send: -
+    <124> returnTop
+    "
+    ^ (( corner  y) - ( origin  y)) .
+ ! 
+
+height: heightInteger 
+    "
+    "
+    ( corner  y: (( origin  y) +  heightInteger )) .
+ ! 
+
+left
+    "
+    <124> returnTop
+    "
+    ^ ( origin  x) .
+ ! 
+
+left: anInteger 
+    "
+    "
+    ( origin  x:  anInteger ) .
+ ! 
+
+leftCenter
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( self  left) @ ( self  center y)) .
+ ! 
+
+origin
+    "
+    <0> pushRcvr: 0
+    "
+    ^  origin  .
+ ! 
+
+origin: originPoint 
+    "
+    <16> unknwon bytecode
+    "
+     origin  :=  originPoint  .
+ ! 
+
+origin: originPoint corner: cornerPoint 
+    "
+    <16> unknwon bytecode
+    <17> unknwon bytecode
+    "
+     origin  :=  originPoint  .
+     corner  :=  cornerPoint  .
+ ! 
+
+origin: originPoint extent: extentPoint 
+    "
+    <16> unknwon bytecode
+    <0> pushRcvr: 0
+    <17> unknwon bytecode
+    <176> send: +
+    "
+     origin  :=  originPoint  .
+     corner  := ( origin  +  extentPoint ) .
+ ! 
+
+right
+    "
+    <124> returnTop
+    "
+    ^ ( corner  x) .
+ ! 
+
+right: anInteger 
+    "
+    "
+    ( corner  x:  anInteger ) .
+ ! 
+
+rightCenter
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( self  right) @ ( self  center y)) .
+ ! 
+
+top
+    "
+    <124> returnTop
+    "
+    ^ ( origin  y) .
+ ! 
+
+top: anInteger 
+    "
+    "
+    ( origin  y:  anInteger ) .
+ ! 
+
+topCenter
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( self  center x) @ ( self  top)) .
+ ! 
+
+topLeft
+    "
+    <0> pushRcvr: 0
+    "
+    ^  origin  .
+ ! 
+
+topLeft: topLeftPoint 
+    "
+    <16> unknwon bytecode
+    "
+     origin  :=  topLeftPoint  .
+ ! 
+
+topRight
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^ (( corner  x) @ ( origin  y)) .
+ ! 
+
+width
+    "
+    <177> send: -
+    <124> returnTop
+    "
+    ^ (( corner  x) - ( origin  x)) .
+ ! 
+
+width: widthInteger 
+    "
+    "
+    ( corner  x: (( origin  x) +  widthInteger )) .
+ ! !
+
+!Rectangle methodsFor: 'comparing'!
+
+
+
+= aRectangle
+    "
+    "
+    ((( self  species) = ( aRectangle  species)) ifTrue: [ ^ (( origin  = ( aRectangle  origin)) and: [( corner  = ( aRectangle  corner)) .]) .] ifFalse: [ ^  false  .]) .
+ ! 
+
+hash
+    "
+    <124> returnTop
+    "
+    ^ (( origin  hash) bitXor: ( corner  hash)) .
+ ! 
+
+hashMappedBy: map 
+    "
+    <124> returnTop
+    "
+    ^ ( self  hash) .
+ ! !
+
+!Rectangle methodsFor: 'rectangle functions'!
+
+
+
+amountToTranslateWithin: aRectangle 
+    "
+    <117> pushConstant: 0
+    <117> pushConstant: 0
+    <0> pushRcvr: 0
+    <17> unknwon bytecode
+    "
+    | delta |
+     delta  := (0 @ 0) .
+    ((( self  left) < ( aRectangle  left)) ifTrue: [( delta  x: (( aRectangle  left) - ( self  left))) .]) .
+    ((( self  top) < ( aRectangle  top)) ifTrue: [( delta  y: (( aRectangle  top) - ( self  top))) .]) .
+    ((( self  right) > ( aRectangle  right)) ifTrue: [( delta  x: (( aRectangle  right) - ( self  right))) .]) .
+    ((( self  bottom) > ( aRectangle  bottom)) ifTrue: [( delta  y: (( aRectangle  bottom) - ( self  bottom))) .]) .
+    ^  delta  .
+ ! 
+
+areasOutside: aRectangle 
+    "
+    <17> unknwon bytecode
+    "
+    | areas yOrigin yCorner |
+    ((( origin   ( aRectangle  corner)) and: [(( aRectangle  origin)   corner ) .]) ifFalse: [ ^ ( Array  with:  self ) .]) .
+     areas  := ( OrderedCollection  new) .
+    ((( aRectangle  origin y) > ( origin  y)) ifTrue: [( areas  add: ( origin  corner: (( corner  x) @ ( aRectangle  origin y)))) .] ifFalse: [ yOrigin  := ( origin  y) .]) .
+    ((( aRectangle  corner y) < ( corner  y)) ifTrue: [( areas  add: ((( origin  x) @ ( aRectangle  corner y)) corner:  corner )) .] ifFalse: [ yCorner  := ( corner  y) .]) .
+    ((( aRectangle  origin x) > ( origin  x)) ifTrue: [( areas  add: ((( origin  x) @  yOrigin ) corner: (( aRectangle  origin x) @  yCorner ))) .]) .
+    ((( aRectangle  corner x) < ( corner  x)) ifTrue: [( areas  add: ((( aRectangle  corner x) @  yOrigin ) corner: (( corner  x) @  yCorner ))) .]) .
+    ^  areas  .
+ ! 
+
+expandBy: delta 
+    "
+    "
+    (( delta  isKindOf:  Rectangle ) ifTrue: [ ^ ( Rectangle  origin: ( origin  - ( delta  origin)) corner: ( corner  + ( delta  corner))) .] ifFalse: [ ^ ( Rectangle  origin: ( origin  -  delta ) corner: ( corner  +  delta )) .]) .
+ ! 
+
+insetBy: delta 
+    "
+    "
+    (( delta  isKindOf:  Rectangle ) ifTrue: [ ^ ( Rectangle  origin: ( origin  + ( delta  origin)) corner: ( corner  - ( delta  corner))) .] ifFalse: [ ^ ( Rectangle  origin: ( origin  +  delta ) corner: ( corner  -  delta )) .]) .
+ ! 
+
+insetOriginBy: originDeltaPoint cornerBy: cornerDeltaPoint 
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  +  originDeltaPoint ) corner: ( corner  -  cornerDeltaPoint )) .
+ ! 
+
+intersect: aRectangle 
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  max: ( aRectangle  origin)) corner: ( corner  min: ( aRectangle  corner))) .
+ ! 
+
+merge: aRectangle 
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  min: ( aRectangle  origin)) corner: ( corner  max: ( aRectangle  corner))) .
+ ! !
+
+!Rectangle methodsFor: 'testing'!
+
+
+
+contains: aRectangle 
+    "
+    <124> returnTop
+    "
+    ^ ((( aRectangle  origin)   origin ) and: [(( aRectangle  corner)   corner ) .]) .
+ ! 
+
+containsPoint: aPoint 
+    "
+    <124> returnTop
+    "
+    ^ (( origin    aPoint ) and: [( aPoint  <  corner ) .]) .
+ ! 
+
+intersects: aRectangle 
+    "
+    <178> send: <
+    <124> returnTop
+    "
+    ^ (( origin  max: ( aRectangle  origin)) < ( corner  min: ( aRectangle  corner))) .
+ ! !
+
+!Rectangle methodsFor: 'truncation and round off'!
+
+
+
+rounded
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  rounded) corner: ( corner  rounded)) .
+ ! !
+
+!Rectangle methodsFor: 'transforming'!
+
+
+
+align: aPoint1 with: aPoint2 
+    "
+    <124> returnTop
+    "
+    ^ ( self  translateBy: ( aPoint2  -  aPoint1 )) .
+ ! 
+
+moveBy: aPoint 
+    "
+    <0> pushRcvr: 0
+    <16> unknwon bytecode
+    <176> send: +
+    <1> pushRcvr: 1
+    <16> unknwon bytecode
+    <176> send: +
+    "
+     origin  := ( origin  +  aPoint ) .
+     corner  := ( corner  +  aPoint ) .
+ ! 
+
+moveTo: aPoint 
+    "
+    <1> pushRcvr: 1
+    <16> unknwon bytecode
+    <176> send: +
+    <0> pushRcvr: 0
+    <177> send: -
+    <16> unknwon bytecode
+    "
+     corner  := ( corner  +  aPoint  -  origin ) .
+     origin  :=  aPoint  .
+ ! 
+
+scaleBy: scale 
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  *  scale ) corner: ( corner  *  scale )) .
+ ! 
+
+translateBy: factor 
+    "
+    <124> returnTop
+    "
+    ^ ( Rectangle  origin: ( origin  +  factor ) corner: ( corner  +  factor )) .
+ ! !
+
+!Rectangle methodsFor: 'copying'!
+
+
+
+copy
+    "
+    <124> returnTop
+    "
+    ^ ( self  deepCopy) .
+ ! !
+
+!Rectangle methodsFor: 'printing'!
+
+
+
+printOn: aStream 
+    "
+    "
+    ( origin  printOn:  aStream ) .
+    ( aStream  nextPutAll: ' corner: ') .
+    ( corner  printOn:  aStream ) .
+ ! 
+
+storeOn: aStream 
+    "
+    "
+    ( aStream  nextPut: $( ;  nextPutAll: ( self  species name) ;  nextPutAll: ' origin: ' ;  store:  origin  ;  nextPutAll: ' corner: ' ;  store:  corner  ;  nextPut: $)) .
+ ! !
+
+"= = = == = "!
+Rectangle class instanceVariableNames: '' !
+!Rectangle class methodsFor: 'instance creation'!
+
+
+
+fromUser
+    ^ ( self  fromUser: (1 @ 1)) .
+ ! 
+
+fromUser: gridPoint 
+    | originPoint newSelf minCorner oldCursor |
+     oldCursor  := ( Sensor  currentCursor) .
+    ( Cursor  cursorLink:  false ) .
+     originPoint  := (( Sensor  cursorPoint) grid:  gridPoint ) .
+    ([( Sensor  redButtonPressed) .] whileFalse: [( Processor  yield) .(( Cursor  origin) showGridded:  gridPoint ) . originPoint  := (( Sensor  cursorPoint) grid:  gridPoint ) .]) .
+     newSelf  := (( self  new) origin:  originPoint ) .
+     minCorner  := ( originPoint  +  gridPoint ) .
+    ( Sensor  cursorPoint:  minCorner ) .
+    ([( Sensor  redButtonPressed) .] whileTrue: [( Processor  yield) .(( Cursor  corner) showGridded:  gridPoint ) .( newSelf  corner: ((( Sensor  cursorPoint) grid:  gridPoint ) max:  minCorner )) .( Display  flash:  newSelf ) .]) .
+    ( Cursor  cursorLink:  true ) .
+    ( oldCursor  show) .
+    ^  newSelf  .
+ ! 
+
+fromUserAspectRatio: aspectPoint 
+    | rectangle extent ratio |
+    (( Cursor  origin) showWhile: [ rectangle  := (( Sensor  waitButton) extent: (1 @ 1)) .]) .
+     ratio  := (( aspectPoint  y) / ( aspectPoint  x)) .
+    (( Cursor  corner) showWhile: [( Sensor  cursorPoint: ( rectangle  corner)) .([( Sensor  anyButtonPressed) .] whileTrue: [ extent  := ((( Sensor  cursorPoint) - ( rectangle  origin)) max: (1 @ 1)) .(((( extent  y) * ( aspectPoint  x)) > (( aspectPoint  y) * ( extent  x))) ifTrue: [( extent  x: ((( extent  y) /  ratio ) rounded)) .] ifFalse: [( extent  y: ((( extent  x) *  ratio ) rounded)) .]) .( rectangle  extent:  extent ) .( Display  flash:  rectangle ) .]) .]) .
+    ^  rectangle  .
+ ! 
+
+left: leftNumber right: rightNumber top: topNumber bottom: bottomNumber 
+    ^ ( self  origin: ( leftNumber  @  topNumber ) corner: ( rightNumber  @  bottomNumber )) .
+ ! 
+
+origin: originPoint corner: cornerPoint 
+    ^ (( self  new) origin:  originPoint  corner:  cornerPoint ) .
+ ! 
+
+origin: originPoint extent: extentPoint 
+    ^ (( self  new) origin:  originPoint  extent:  extentPoint ) .
+ ! 
+
+originFromUser: extentPoint 
+    ^ ( self  originFromUser:  extentPoint  grid: (1 @ 1)) .
+ ! 
+
+originFromUser: extentPoint grid: scaleFactor 
+    | tempRect |
+     tempRect  := ((( Sensor  cursorPoint) grid:  scaleFactor ) extent:  extentPoint ) .
+    ([( Sensor  redButtonPressed) .] whileFalse: [( Display  reverse:  tempRect ) .( Display  reverse:  tempRect ) . tempRect  := ((( Sensor  cursorPoint) grid:  scaleFactor ) extent:  extentPoint ) .]) .
+    ^  tempRect  .
+ ! !
+

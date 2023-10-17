@@ -41,7 +41,7 @@ CLEANFILES = $(PROG) *.o parser.tab.* scanner.yy.*
 
 include depends.mk
 
-.PHONY: run clean depends
+.PHONY: run clean depends tests
 
 all:: run
 
@@ -65,4 +65,7 @@ parser.tab.c parser.tab.h: parser.y nodes.h
 
 depends: scanner.yy.h parser.tab.h
 	$(CC) -MM *.c > depends.mk
+
+tests:
+	cd tests && ./run.sh
 

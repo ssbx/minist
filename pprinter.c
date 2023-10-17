@@ -195,11 +195,13 @@ static void print_method(struct Method* m) {
             break;
     }
 
-    printf("    \"\n");
-    for (int i = 0; i < m->bytecount; i++) {
-        printf("    <%i> %s\n", m->bytecodes[i], bytecodes_getBytecodeDescription(m->bytecodes[i]));
+    if (m->bytecodes) {
+        printf("    \"\n");
+        for (int i = 0; i < m->bytecount; i++) {
+            printf("    <%i> %s\n", m->bytecodes[i], bytecodes_getBytecodeDescription(m->bytecodes[i]));
+        }
+        printf("    \"\n");
     }
-    printf("    \"\n");
 
 
     if (m->prim) {
