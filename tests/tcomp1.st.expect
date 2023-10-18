@@ -17,9 +17,9 @@ centerx
     <1> pushRcvr: 1
     <176> send: +
     <119> pushConstant: 2
-    <16> unknwon bytecode
+    <16> pushTemp: 0
     <176> send: +
-    <17> unknwon bytecode
+    <17> pushTemp: 1
     <176> send: +
     <185> send: /
     <124> returnTop

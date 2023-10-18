@@ -18,9 +18,16 @@ center
 
 center: b
     | a |
-    ^ origin + (corner / 2) !
-!
+    ^ origin + b / (corner / 2) !
 
++ a
+    | b c |
+    ^ origin + b + a / 2 !
+
+at: x put: y
+    | z |
+    ^ x * (y * z) !
+!
 "========================" !
 
 Rectangle class

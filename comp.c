@@ -119,11 +119,13 @@ static int getTemps(struct Method* m, char*** dest) {
     int numTmps = 0;
 
     if (m->def->type == ST_KEYWORD) {
-        struct KeywordMsg *kw = m->def->keys;
+        struct KeywordMsg *kw = m->def->u.keyword.keys;
         while (kw) {
             numTmps++;
             kw = kw->next;
         }
+    } else if (m->def->type == ST_BINARY) {
+        numTmps++;
     }
 
     if (m->temps) {
@@ -133,17 +135,21 @@ static int getTemps(struct Method* m, char*** dest) {
             t = t->next;
         }
     }
+
     if (numTmps)
         temps = malloc(sizeof(char**) * numTmps);
 
     int tmpid = 0;
     if (m->def->type == ST_KEYWORD) {
-        struct KeywordMsg *kw = m->def->keys;
+        struct KeywordMsg *kw = m->def->u.keyword.keys;
         while (kw) {
             temps[tmpid++] = kw->arg->u.id.name;
             kw = kw->next;
         }
+    } else if (m->def->type == ST_BINARY) {
+        temps[tmpid++] = m->def->u.binary.arg;
     }
+
     if (m->temps) {
         struct Temp *t = m->temps;
         while (t) {

@@ -635,7 +635,9 @@ mkUnaryMethodDef(struct ExprUnit* msg)
 {
     struct MethodDef *d = malloc(sizeof(struct MethodDef));
     d->type = ST_UNARY;
-    d->unary = msg;
+    assert(msg->type == ST_ID);
+    d->u.unary.name = myStrdup(msg->u.id.name);
+    freeExprUnit(msg);
     return d;
 }
 
@@ -646,8 +648,10 @@ mkBinaryMethodDef(
 {
     struct MethodDef *d = malloc(sizeof(struct MethodDef));
     d->type = ST_BINARY;
-    d->binary = c;
-    d->arg = arg;
+    d->u.binary.op = c;
+    assert(arg->type == ST_ID);
+    d->u.binary.arg = myStrdup(arg->u.id.name);
+    freeExprUnit(arg);
     return d;
 }
 
@@ -656,7 +660,7 @@ mkKeywordMethodDef(struct KeywordMsg *keys)
 {
     struct MethodDef *d = malloc(sizeof(struct MethodDef));
     d->type = ST_KEYWORD;
-    d->keys = keys;
+    d->u.keyword.keys = keys;
     return d;
 }
 

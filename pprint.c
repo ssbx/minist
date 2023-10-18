@@ -180,13 +180,13 @@ static void print_method(struct Method* m) {
     struct KeywordMsg *kw;
     switch(m->def->type) {
         case ST_UNARY:
-            printf( "%s\n", m->def->unary->u.id.name);
+            printf( "%s\n", m->def->u.unary.name);
             break;
         case ST_BINARY:
-            printf( "%c %s\n", m->def->binary, m->def->arg->u.id.name);
+            printf( "%c %s\n", m->def->u.binary.op, m->def->u.binary.arg);
             break;
         case ST_KEYWORD:
-            kw = m->def->keys;
+            kw = m->def->u.keyword.keys;
             while (kw) {
                 printf( "%s %s ", kw->key, kw->arg->u.id.name);
                 kw = kw->next;

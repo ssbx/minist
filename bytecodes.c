@@ -19,6 +19,10 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 13) return "pushRcvr: 13";
     if (code == 14) return "pushRcvr: 14";
     if (code == 15) return "pushRcvr: 15";
+    if (code == 16) return "pushTemp: 0";
+    if (code == 17) return "pushTemp: 1";
+    if (code == 18) return "pushTemp: 2";
+    if (code == 19) return "pushTemp: 3";
     if (code == 176) return "send: +";
     if (code == 177) return "send: -";
     if (code == 178) return "send: <";

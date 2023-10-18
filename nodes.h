@@ -110,16 +110,19 @@ struct Method {
 
 
 /*
- * Either unary, binary or keyword. XXX Does not look nice (union?).
+ * Either unary, binary or keyword.
  */
+struct DefUnary   { char *name; };
+struct DefBinary  { int op; char *arg; };
+struct DefKeyword { struct KeywordMsg *keys; };
+union MethodDefType {
+    struct DefUnary   unary;
+    struct DefBinary  binary;
+    struct DefKeyword keyword;
+};
 struct MethodDef {
     int type;
-    struct ExprUnit *unary;
-
-    int  binary;
-    struct ExprUnit *arg;
-
-    struct KeywordMsg *keys;
+    union MethodDefType u;
 };
 
 
@@ -174,7 +177,7 @@ struct EUnitCharacter { char *value; };
 struct EUnitInteger { char *value; };
 struct EUnitSymbol  { char *value; };
 struct EUnitArray   { struct ExprUnit *head; };
-union Unit {
+union ExprUnitType {
     struct EUnitId        id;
     struct EUnitBinary    binary;
     struct EUnitUnary     unary;
@@ -187,12 +190,12 @@ union Unit {
     struct EUnitArray     array;
 };
 struct ExprUnit {
-    int type;
-    union Unit u;
-    struct Cascade  *cascade;   /* XXX does this belong here? */
-    struct ExprUnit *next;      /* XXX does an ExprUnit have next? */
-    int              returns;   /* XXX sould be in Expression */
-    struct ExprUnit *assignsTo; /* XXX should be in Expression */
+    int                type;
+    union ExprUnitType u;
+    struct Cascade    *cascade;   /* XXX does this belong here? */
+    struct ExprUnit   *next;      /* XXX does an ExprUnit have next? */
+    int                returns;   /* XXX sould be in Expression */
+    struct ExprUnit   *assignsTo; /* XXX should be in Expression */
 };
 
 
