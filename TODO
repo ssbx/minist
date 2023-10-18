@@ -10,3 +10,6 @@
 - rendre le bazard strong et modifier le bytecode en consequence
 - reflechir à bytecode -> .ssa (qbe) pour du jit
 
+// portability
+- flex compat mode
+- bison yacc compat mode

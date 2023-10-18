@@ -1,71 +1,47 @@
-# the default target
-all::
-
-# install configuration
-prefix     = $(HOME)
-bindir     = $(prefix)/bin
-libexecdir = $(prefix)/libexec
-
-SHELL = /bin/sh
-PROG  = minist-img-gen
-BISON = bison
-FLEX  = flex
-CC    = cc
-RM    = rm -f
-
-.SUFFIXES:
+.POSIX:
 .SUFFIXES: .c .o
 
-# optional CFLAGS that can be altered by the user
-CFLAGS    = -Wall -Wextra
-ALLCFLAGS =
-ALLCFLAGS = -I. $(CFLAGS)
+prefix     = $(HOME)
+bindir     = $(prefix)/bin
 
-# optional BISONFLAGS that can be altered by the user
+SHELL = /bin/sh
+BISON = bison
+FLEX  = flex
+RM    = rm -f
+
+CFLAGS     = -I. -std=c99 -g -Wall -Wextra -Wpedantic
 BISONFLAGS = --color -Wall -Wother -Wcounterexamples
-ALLBISONFLAGS =
-ALLBISONFLAGS = $(BISONFLAGS)
+FLEXFLAGS  = --outfile=scanner.yy.c --header-file=scanner.yy.h
 
-# optional FLEXFLAGS that can be altered by the user
-FLEXFLAGS =
-ALLFLEXFLAGS =
-ALLFLEXFLAGS = --outfile=scanner.yy.c --header-file=scanner.yy.h $(FLEXFLAGS)
-
-# all objects. Clear guard and definition
-OBJECTS =
-OBJECTS = parser.tab.o scanner.yy.o compiler.o pprinter.o bytecodes.o $(PROG).o
-
-# cleanfiles
-CLEANFILES =
-CLEANFILES = $(PROG) *.o parser.tab.* scanner.yy.*
+OBJS  = parser.tab.o scanner.yy.o compiler.o pprinter.o bytecodes.o \
+        minist-img-gen.o
 
 include depends.mk
 
-.PHONY: run clean depends test
-
-all:: run
-
-run: $(PROG)
-	./$(PROG) files/Test.st
-
-$(PROG): $(OBJECTS)
-	$(CC) -o $(PROG) $(OBJECTS)
-
-clean:
-	$(RM) $(CLEANFILES)
-
-scanner.yy.c scanner.yy.h: scanner.l parser.tab.h
-	$(FLEX) $(ALLFLEXFLAGS) scanner.l
-
-parser.tab.c parser.tab.h: parser.y nodes.h
-	$(BISON) $(ALLBISONFLAGS) -d parser.y
+minist-img-gen: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) -o minist-img-gen
 
 .c.o:
-	$(CC) $(CPPFLAGS) -c $(ALLCFLAGS) $<
+	$(CC) $(CFLAGS) -c $< -o $@
+
+parser.tab.c parser.tab.h: parser.y nodes.h
+	$(BISON) $(BISONFLAGS) -d parser.y
+
+scanner.yy.c scanner.yy.h: scanner.l parser.tab.h
+	$(FLEX) $(FLEXFLAGS) scanner.l
+
+
+.PHONY: run clean depends check
+
+run: minist-img-gen
+	./minist-img-gen files/Test.st
+
+clean:
+	$(RM) minist-img-gen *.o parser.tab.* scanner.yy.*
 
 depends: scanner.yy.h parser.tab.h
 	$(CC) -MM *.c > depends.mk
 
-test: $(PROG)
-	cd tests && ./run.sh
+check: minist-img-gen
+	./tests/run.sh
 

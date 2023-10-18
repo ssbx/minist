@@ -14,6 +14,12 @@ extern char* st_string;
 extern int st_op;
 extern char *fname;
 
+char *myStrdup(char *str) {
+    size_t len = strlen(str) + 1;
+    char  *new = malloc(len);
+    memcpy(new, str, len);
+    return new;
+}
 struct ClassFile* parsed_file = NULL;
 
 void freeExprUnit(struct ExprUnit *expr);
@@ -325,13 +331,13 @@ unit: id | literals | block | '(' expr ')' { $$ = $2;}
 
 literals: integer | string | charconst | symconst | arrayconst
 
-integer:   INTEGER    { $$ = mkIntExpr(strdup(yytext)); }
+integer:   INTEGER    { $$ = mkIntExpr(myStrdup(yytext)); }
 string:    STRING     { $$ = mkStringExpr(st_string); }
-charconst: CHARCONST  { $$ = mkCharExpr(strdup(yytext)); }
-symconst:  SYMCONST   { $$ = mkSymbolExpr(strdup(yytext)); }
-id:        IDENTIFIER { $$ = mkIdExpr(strdup(yytext)); }
-keysel:    KEYWORD    { $$ = strdup(yytext); }
-colonvar:  COLONVAR   { $$ = strdup(yytext); }
+charconst: CHARCONST  { $$ = mkCharExpr(myStrdup(yytext)); }
+symconst:  SYMCONST   { $$ = mkSymbolExpr(myStrdup(yytext)); }
+id:        IDENTIFIER { $$ = mkIdExpr(myStrdup(yytext)); }
+keysel:    KEYWORD    { $$ = myStrdup(yytext); }
+colonvar:  COLONVAR   { $$ = myStrdup(yytext); }
 
 binsel: binops { $$ = st_op; };
 binops: ',' | '-' | '*' | '/' | '<' | LESS_OR_EQUAL | '>' |
@@ -339,7 +345,6 @@ binops: ',' | '-' | '*' | '/' | '<' | LESS_OR_EQUAL | '>' |
         OBJECT_NOT_EQUALS | '+' | '&' | '|'
 
 %%
-
 void
 checkStr(char *a, char *b)
 {
@@ -715,7 +720,7 @@ int tokenizeStString(char *str, char ***dst)
             tokens = realloc(tokens, sizeof(char*) + 10);
             tsize += 10;
         }
-        tokens[tnum++] = strdup(tok);
+        tokens[tnum++] = myStrdup(tok);
         tok = strtok(NULL, " ");
     }
     *dst = tokens;
@@ -755,7 +760,7 @@ mkClassHeader(
     freeExprUnit(pooldict);
 
     assert(category->type  == ST_STRING);
-    h->category = strdup(category->string.value);
+    h->category = myStrdup(category->string.value);
     freeExprUnit(category);
     return h;
 }
@@ -768,11 +773,11 @@ mkComment(
     struct ClassComment *c = malloc(sizeof(struct ClassComment));
 
     assert(className->type == ST_ID);
-    c->className = strdup(className->id.name);
+    c->className = myStrdup(className->id.name);
     freeExprUnit(className);
 
     assert(comment->type == ST_STRING);
-    c->str = strdup(comment->string.value);
+    c->str = myStrdup(comment->string.value);
     freeExprUnit(comment);
     return c;
 }
@@ -804,7 +809,7 @@ mkClassClassHeader(
 {
     struct ClassClassHeader *c = malloc(sizeof(struct ClassClassHeader));
     assert(name->type     == ST_ID);
-    c->className = strdup(name->id.name);
+    c->className = myStrdup(name->id.name);
     freeExprUnit(name);
 
     assert(instvars->type == ST_STRING);

@@ -8,6 +8,7 @@ int   st_op;
 
 %}
 %option yylineno
+%option never-interactive
 
 %%
 
