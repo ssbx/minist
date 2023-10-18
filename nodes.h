@@ -162,49 +162,31 @@ enum {
     ST_ARRAYCONST
 };
 
+struct EUnitId      { char *name; };
+struct EUnitBinary  { int op; struct ExprUnit *receiver; struct BinaryMsg *msgs;};
+struct EUnitUnary   { struct ExprUnit *receiver; struct UnaryMsg *msgs; };
+struct EUnitKeyword { struct ExprUnit *receiver; struct KeywordMsg *msgs; };
+struct EUnitBlock   { struct BlockArg *args; struct Temp *temps; struct ExprUnit *exprs; };
+struct EUnitString  { char* value; };
+struct EUnitCharacter { char *value; };
+struct EUnitInteger { char *value; };
+struct EUnitSymbol  { char *value; };
+struct EUnitArray   { struct ExprUnit *head; };
+union Unit {
+    struct EUnitId        id;
+    struct EUnitBinary    binary;
+    struct EUnitUnary     unary;
+    struct EUnitKeyword   keyword;
+    struct EUnitBlock     block;
+    struct EUnitString    string;
+    struct EUnitCharacter character;
+    struct EUnitInteger   integer;
+    struct EUnitSymbol    symbol;
+    struct EUnitArray     array;
+};
 struct ExprUnit {
     int type;
-    union {
-
-        struct {
-            char *name;
-        } id; /* XXX does an id needs to be a ExprUnit? */
-
-        struct {
-            int op;
-            struct ExprUnit *receiver;
-            struct BinaryMsg *msgs;
-        } binary;
-
-        struct {
-            struct ExprUnit *receiver;
-            struct UnaryMsg *msgs;
-        } unary;
-        struct {
-            struct ExprUnit *receiver;
-            struct KeywordMsg *msgs;
-        } keyword;
-        struct {
-            struct BlockArg *args;
-            struct Temp     *temps;
-            struct ExprUnit *exprs;
-        } block;
-        struct {
-            char *value;
-        } string;
-        struct {
-            char *value;
-        } character;
-        struct {
-            char *value;
-        } integer;
-        struct {
-            char *value;
-        } symbol;
-        struct {
-            struct ExprUnit *head;
-        } array;
-    };
+    union Unit u;
     struct Cascade  *cascade;   /* XXX does this belong here? */
     struct ExprUnit *next;      /* XXX does an ExprUnit have next? */
     int              returns;   /* XXX sould be in Expression */

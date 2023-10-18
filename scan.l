@@ -1,6 +1,6 @@
 %{
 
-#include "parser.tab.h"
+#include "parse.tab.h"
 
 char *st_string = NULL;
 int   st_string_max = 100;

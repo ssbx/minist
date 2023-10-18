@@ -11,10 +11,10 @@ RM    = rm -f
 
 CFLAGS     = -I. -std=c99 -g -Wall -Wextra -Wpedantic
 BISONFLAGS = --color -Wall -Wother -Wcounterexamples
-FLEXFLAGS  = --outfile=scanner.yy.c --header-file=scanner.yy.h
+FLEXFLAGS  = --outfile=scan.yy.c --header-file=scan.yy.h
 
-OBJS  = parser.tab.o scanner.yy.o compiler.o pprinter.o bytecodes.o \
-        minist-img-gen.o
+OBJS  = parse.tab.o scan.yy.o comp.o pprint.o bytecodes.o \
+        mem.o minist-img-gen.o
 
 minist-img-gen: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o minist-img-gen
@@ -22,11 +22,11 @@ minist-img-gen: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-parser.tab.c parser.tab.h: parser.y nodes.h
-	$(BISON) $(BISONFLAGS) -d parser.y
+parse.tab.c parse.tab.h: parse.y nodes.h
+	$(BISON) $(BISONFLAGS) -d parse.y
 
-scanner.yy.c scanner.yy.h: scanner.l parser.tab.h
-	$(FLEX) $(FLEXFLAGS) scanner.l
+scan.yy.c scan.yy.h: scan.l parse.tab.h
+	$(FLEX) $(FLEXFLAGS) scan.l
 
 include depends.mk
 
@@ -35,9 +35,9 @@ run: minist-img-gen
 	./minist-img-gen files/Test.st
 
 clean:
-	$(RM) minist-img-gen *.o parser.tab.* scanner.yy.*
+	$(RM) minist-img-gen *.o parse.tab.* scan.yy.*
 
-depends: scanner.yy.h parser.tab.h
+depends: scan.yy.h parse.tab.h
 	$(CC) -MM *.c > depends.mk
 
 check: minist-img-gen

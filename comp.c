@@ -2,9 +2,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "compiler.h"
+#include "comp.h"
 #include "bytecodes.h"
-#include "parser.tab.h"
+#include "parse.tab.h"
 
 #define INITIAL_BUFF_SIZE 50
 

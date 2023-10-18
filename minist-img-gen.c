@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "parser.tab.h"
-#include "compiler.h"
-#include "pprinter.h"
-#include "scanner.yy.h"
+#include "parse.tab.h"
+#include "comp.h"
+#include "pprint.h"
+#include "scan.yy.h"
 #include "nodes.h"
 
 extern struct ClassFile *parsed_file;

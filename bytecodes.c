@@ -1,5 +1,5 @@
 #include "bytecodes.h"
-#include "parser.tab.h"
+#include "parse.tab.h"
 #include <assert.h>
 
 const char* bytecodes_getBytecodeDescription(unsigned char code) {
