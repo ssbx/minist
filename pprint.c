@@ -71,14 +71,14 @@ static void print_eval(struct ExprUnit *e) {
     struct BlockArg *ba;
     switch (e->type) {
         case ST_ID:
-            printf( " %s ", e->id.name);
+            printf( " %s ", e->u.id.name);
             break;
         case ST_UNARY:
             printf( "(");
-            print_eval(e->unary.receiver);
-            struct UnaryMsg *umsg = e->unary.msgs;
+            print_eval(e->u.unary.receiver);
+            struct UnaryMsg *umsg = e->u.unary.msgs;
             while (umsg) {
-                printf( " %s", umsg->msg->id.name);
+                printf( " %s", umsg->msg->u.id.name);
                 umsg = umsg->next;
             }
             cas = e->cascade;
@@ -90,8 +90,8 @@ static void print_eval(struct ExprUnit *e) {
             break;
         case ST_BINARY:
             printf( "(");
-            print_eval(e->binary.receiver);
-            struct BinaryMsg *bmsg = e->binary.msgs;
+            print_eval(e->u.binary.receiver);
+            struct BinaryMsg *bmsg = e->u.binary.msgs;
             while(bmsg) {
                 printf( " %c ", bmsg->op);
                 print_eval(bmsg->arg);
@@ -107,8 +107,8 @@ static void print_eval(struct ExprUnit *e) {
             break;
         case ST_KEYWORD:
             printf( "(");
-            print_eval(e->keyword.receiver);
-            kmsg = e->keyword.msgs;
+            print_eval(e->u.keyword.receiver);
+            kmsg = e->u.keyword.msgs;
             while (kmsg) {
                 printf( " %s ", kmsg->key);
                 print_eval(kmsg->arg);
@@ -124,40 +124,40 @@ static void print_eval(struct ExprUnit *e) {
             break;
         case ST_BLOCK:
             printf( "[");
-            if (e->block.args) {
-                ba = e->block.args;
+            if (e->u.block.args) {
+                ba = e->u.block.args;
                 while (ba) {
                     printf( " %s", ba->name);
                     ba = ba->next;
                 }
                 printf( " |");
             }
-            if (e->block.temps) {
+            if (e->u.block.temps) {
                 printf( " | ");
-                tps = e->block.temps;
+                tps = e->u.block.temps;
                 while(tps) {
                     print_eval(tps->name);
                     tps = tps->next;
                 }
                 printf( " | ");
             }
-            if (e->block.exprs)
-                print_exp(e->block.exprs);
+            if (e->u.block.exprs)
+                print_exp(e->u.block.exprs);
             printf( "]");
             break;
         case ST_STRING:
-            printf( "'%s'", e->string.value);
+            printf( "'%s'", e->u.string.value);
             break;
         case ST_CHAR:
-            printf( "%s", e->character.value);
+            printf( "%s", e->u.character.value);
             break;
         case ST_INT:
-            printf( " %s ", e->integer.value);
+            printf( " %s ", e->u.integer.value);
             break;
         case ST_ARRAY:
             printf( "(");
 
-            eu = e->array.head;
+            eu = e->u.array.head;
             while (eu) {
                 print_eval(eu);
                 printf( " ");
@@ -169,7 +169,7 @@ static void print_eval(struct ExprUnit *e) {
         case ST_ARRAYCONST:
             printf( "#");
 
-            if (e->array.head) print_eval(e->array.head);
+            if (e->u.array.head) print_eval(e->u.array.head);
             break;
 
     }
@@ -180,15 +180,15 @@ static void print_method(struct Method* m) {
     struct KeywordMsg *kw;
     switch(m->def->type) {
         case ST_UNARY:
-            printf( "%s\n", m->def->unary->id.name);
+            printf( "%s\n", m->def->unary->u.id.name);
             break;
         case ST_BINARY:
-            printf( "%c %s\n", m->def->binary, m->def->arg->id.name);
+            printf( "%c %s\n", m->def->binary, m->def->arg->u.id.name);
             break;
         case ST_KEYWORD:
             kw = m->def->keys;
             while (kw) {
-                printf( "%s %s ", kw->key, kw->arg->id.name);
+                printf( "%s %s ", kw->key, kw->arg->u.id.name);
                 kw = kw->next;
             }
             printf( "\n");
@@ -205,14 +205,14 @@ static void print_method(struct Method* m) {
 
 
     if (m->prim) {
-        printf( "    <primitive: %s>\n", m->prim->integer.value);
+        printf( "    <primitive: %s>\n", m->prim->u.integer.value);
     }
 
     if (m->temps) {
         struct Temp *t = m->temps;
         printf("    |");
         while(t) {
-            printf( " %s", t->name->id.name);
+            printf( " %s", t->name->u.id.name);
             t = t->next;
         }
         printf(" |\n");
@@ -265,7 +265,7 @@ void pprinter_print(struct ClassFile *cf) {
     printf( "\n");
     struct MethodCategory *m = cf->categories;
     while (m) {
-        printf( "!%s methodsFor: '%s'!\n", m->classname->id.name, m->name);
+        printf( "!%s methodsFor: '%s'!\n", m->classname->u.id.name, m->name);
         printf( "\n");
         struct Method *met = m->methods;
         while(met) {
@@ -286,7 +286,7 @@ void pprinter_print(struct ClassFile *cf) {
 
         struct MethodCategory * mmm = cf->classCategories;
         while (mmm) {
-            printf( "!%s class methodsFor: '%s'!\n\n", mmm->classname->id.name, mmm->name);
+            printf( "!%s class methodsFor: '%s'!\n\n", mmm->classname->u.id.name, mmm->name);
             struct Method* mmmet = mmm->methods;
             while (mmmet) {
                 print_method(mmmet);

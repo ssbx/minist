@@ -76,14 +76,14 @@ static void decodeExpr(
     switch (expr->type) {
         case ST_ID:
             for (int i = 0; i < info.numTemps; i++) {
-                if (strcmp(expr->id.name, info.temps[i]) == 0) {
+                if (strcmp(expr->u.id.name, info.temps[i]) == 0) {
                     code = bytecodes_getCodeFor(PUSH_TEMP, i);
                     addByteToMethod(code, method);
                     return;
                 }
             }
             for (int i = 0; i < info.numInstVars; i++) {
-                if (strcmp(expr->id.name, info.instvars[i]) == 0) {
+                if (strcmp(expr->u.id.name, info.instvars[i]) == 0) {
                     code = bytecodes_getCodeFor(PUSH_RCVR, i);
                     addByteToMethod(code, method);
                     return;
@@ -92,17 +92,17 @@ static void decodeExpr(
             printf("%s %i error\n", __FILE__, __LINE__);
             break;
         case ST_INT:
-            printf("wtf pushConstant: %s\n", expr->integer.value);
+            printf("wtf pushConstant: %s\n", expr->u.integer.value);
             break;
         case ST_CHAR:
             /* WTF */
-            code = bytecodes_getCodeFor(PUSH_CONSTANT, atoi(expr->string.value));
+            code = bytecodes_getCodeFor(PUSH_CONSTANT, atoi(expr->u.string.value));
             addByteToMethod(code, method);
             break;
 
         case ST_BINARY:
-            decodeExpr(method, expr->binary.receiver, info);
-            binmsg = expr->binary.msgs;
+            decodeExpr(method, expr->u.binary.receiver, info);
+            binmsg = expr->u.binary.msgs;
             while (binmsg) {
                 decodeExpr(method, binmsg->arg, info);
                 code = bytecodes_getCodeFor(SEND_BIN_MSG, binmsg->op);
@@ -117,6 +117,7 @@ static void decodeExpr(
 static int getTemps(struct Method* m, char*** dest) {
     char **temps = NULL;
     int numTmps = 0;
+
     if (m->def->type == ST_KEYWORD) {
         struct KeywordMsg *kw = m->def->keys;
         while (kw) {
@@ -139,14 +140,14 @@ static int getTemps(struct Method* m, char*** dest) {
     if (m->def->type == ST_KEYWORD) {
         struct KeywordMsg *kw = m->def->keys;
         while (kw) {
-            temps[tmpid++] = kw->arg->id.name;
+            temps[tmpid++] = kw->arg->u.id.name;
             kw = kw->next;
         }
     }
     if (m->temps) {
         struct Temp *t = m->temps;
         while (t) {
-            temps[tmpid++] = t->name->id.name;
+            temps[tmpid++] = t->name->u.id.name;
             t = t->next;
         }
     }

@@ -173,7 +173,8 @@ category: '!' id keysel string '!' methods '!' {
  *****************************************************************************/
 clsclsheader: id id keysel string '!' {
         checkStr($3,"instanceVariableNames:");
-        checkStr($2->id.name, "class");
+        assert($2->type == ST_ID);
+        checkStr($2->u.id.name, "class");
         free($3);
         freeExprUnit($2);
         $$ = mkClassClassHeader($1, $4);}
@@ -189,11 +190,13 @@ clscategories: clscategory
                 last->next = $2;
                 $$ = $1;}
 clscategory: '!' id id keysel string '!' methods '!' {
-                checkStr($3->id.name, "class");
+                assert($3->type == ST_ID);
+                checkStr($3->u.id.name, "class");
                 checkStr($4, "methodsFor:");
                 $$ = mkMethodCategory($2, $5, $7); }
            | '!' id id keysel string '!' '!' {
-                checkStr($3->id.name, "class");
+                assert($3->type == ST_ID);
+                checkStr($3->u.id.name, "class");
                 checkStr($4, "methodsFor:");
                 $$ = mkMethodCategory($2, $5, NULL); }
 
@@ -370,7 +373,7 @@ struct ExprUnit*
 mkArrayConst(struct ExprUnit* head)
 {
     struct ExprUnit *t = allocExprUnit(ST_ARRAYCONST);
-    t->array.head = head;
+    t->u.array.head = head;
     return t;
 }
 
@@ -378,7 +381,7 @@ struct ExprUnit*
 mkArray(struct ExprUnit* head)
 {
     struct ExprUnit *t = allocExprUnit(ST_ARRAY);
-    t->array.head = head;
+    t->u.array.head = head;
     return t;
 }
 
@@ -386,7 +389,7 @@ struct ExprUnit*
 mkSymbolExpr(char*v)
 {
     struct ExprUnit *t = allocExprUnit(ST_SYMBOL);
-    t->symbol.value = v;
+    t->u.symbol.value = v;
     return t;
 }
 
@@ -394,7 +397,7 @@ struct ExprUnit*
 mkIntExpr(char*v)
 {
     struct ExprUnit *t = allocExprUnit(ST_CHAR);
-    t->integer.value = v;
+    t->u.integer.value = v;
     return t;
 }
 
@@ -402,16 +405,15 @@ struct ExprUnit*
 mkCharExpr(char*v)
 {
     struct ExprUnit *t = allocExprUnit(ST_CHAR);
-    t->character.value = v;
+    t->u.character.value = v;
     return t;
 }
 
 struct ExprUnit*
 mkStringExpr(char *v)
 {
-    struct ExprUnit *t = allocExprUnit(ST_BLOCK);
-    t->type = ST_STRING;
-    t->string.value = v;
+    struct ExprUnit *t = allocExprUnit(ST_STRING);
+    t->u.string.value = v;
     return t;
 }
 
@@ -441,9 +443,9 @@ mkBlockExpr(
         struct ExprUnit *exprs)
 {
     struct ExprUnit *t = allocExprUnit(ST_BLOCK);
-    t->block.args  = args;
-    t->block.temps = tmps;
-    t->block.exprs = exprs;
+    t->u.block.args  = args;
+    t->u.block.temps = tmps;
+    t->u.block.exprs = exprs;
     return t;
 }
 
@@ -482,11 +484,11 @@ addUnaryMsg(
         struct ExprUnit *u,
         struct UnaryMsg *new)
 {
-    if (! u->unary.msgs) {
-        u->unary.msgs = new;
+    if (! u->u.unary.msgs) {
+        u->u.unary.msgs = new;
         return;
     }
-    struct UnaryMsg *last = u->unary.msgs;
+    struct UnaryMsg *last = u->u.unary.msgs;
     while(last->next) last = last->next;
     last->next = new;
 }
@@ -573,8 +575,7 @@ struct ExprUnit*
 mkIdExpr(char*v)
 {
     struct ExprUnit *t = allocExprUnit(ST_ID);
-    t->type = ST_ID;
-    t->id.name = v;
+    t->u.id.name = v;
     return t;
 }
 
@@ -602,8 +603,8 @@ mkKeywordExpr(
         struct KeywordMsg *args)
 {
     struct ExprUnit *e = allocExprUnit(ST_KEYWORD);
-    e->keyword.receiver = receiver;
-    e->keyword.msgs = args;
+    e->u.keyword.receiver = receiver;
+    e->u.keyword.msgs = args;
     return e;
 }
 
@@ -613,8 +614,8 @@ mkBinaryExpr(
         struct BinaryMsg *msg)
 {
     struct ExprUnit *e = allocExprUnit(ST_BINARY);
-    e->binary.receiver = receiver;
-    e->binary.msgs = msg;
+    e->u.binary.receiver = receiver;
+    e->u.binary.msgs = msg;
     return e;
 }
 
@@ -624,8 +625,8 @@ mkUnaryExpr(
         struct UnaryMsg *msg)
 {
     struct ExprUnit *e = allocExprUnit(ST_UNARY);
-    e->unary.receiver = receiver;
-    e->unary.msgs     = msg;
+    e->u.unary.receiver = receiver;
+    e->u.unary.msgs     = msg;
     return e;
 }
 
@@ -666,22 +667,30 @@ mkMethodCategory(
         struct Method   *methods)
 {
     struct MethodCategory *c = malloc(sizeof(struct MethodCategory));
-    c->classname = classname;
-    c->name = category->string.value;
+    c->classname = classname; /* XX todo extract str */
+
+    assert(category->type == ST_STRING);
+    c->name = myStrdup(category->u.string.value);
+    freeExprUnit(category);
+
     c->methods = methods;
     c->next = NULL;
-    free(category);
+
     return c;
 }
 void freeExprUnit(struct ExprUnit *expr)
 {
     switch (expr->type) {
         case ST_ID:
-            free(expr->id.name);
+            free(expr->u.id.name);
             free(expr);
             break;
         case ST_STRING:
-            free(expr->string.value);
+            free(expr->u.string.value);
+            free(expr);
+            break;
+        case ST_SYMBOL:
+            free(expr->u.symbol.value);
             free(expr);
             break;
     }
@@ -740,27 +749,27 @@ mkClassHeader(
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
 
     assert((super->type    == ST_ID) && (!super->next));
-    h->super = super->id.name;
-    free(super);
+    h->super = myStrdup(super->u.id.name);
+    freeExprUnit(super);
 
     assert(classname->type == ST_SYMBOL);
-    h->className = classname->symbol.value;
-    free(classname);
+    h->className = myStrdup(classname->u.symbol.value);
+    freeExprUnit(classname);
 
     assert(instvars->type  == ST_STRING);
-    h->instsVarNamesCount = tokenizeStString(instvars->string.value, &h->instsVarNames);
+    h->instsVarNamesCount = tokenizeStString(instvars->u.string.value, &h->instsVarNames);
     freeExprUnit(instvars);
 
     assert(classvars->type == ST_STRING);
-    h->classVarNamesCount = tokenizeStString(classvars->string.value, &h->classVarNames);
+    h->classVarNamesCount = tokenizeStString(classvars->u.string.value, &h->classVarNames);
     freeExprUnit(classvars);
 
     assert(pooldict->type  == ST_STRING);
-    h->poolDictsCount = tokenizeStString(pooldict->string.value, &h->poolDicts);
+    h->poolDictsCount = tokenizeStString(pooldict->u.string.value, &h->poolDicts);
     freeExprUnit(pooldict);
 
     assert(category->type  == ST_STRING);
-    h->category = myStrdup(category->string.value);
+    h->category = myStrdup(category->u.string.value);
     freeExprUnit(category);
     return h;
 }
@@ -773,11 +782,11 @@ mkComment(
     struct ClassComment *c = malloc(sizeof(struct ClassComment));
 
     assert(className->type == ST_ID);
-    c->className = myStrdup(className->id.name);
+    c->className = myStrdup(className->u.id.name);
     freeExprUnit(className);
 
     assert(comment->type == ST_STRING);
-    c->str = myStrdup(comment->string.value);
+    c->str = myStrdup(comment->u.string.value);
     freeExprUnit(comment);
     return c;
 }
@@ -808,12 +817,12 @@ mkClassClassHeader(
         struct ExprUnit *instvars)
 {
     struct ClassClassHeader *c = malloc(sizeof(struct ClassClassHeader));
-    assert(name->type     == ST_ID);
-    c->className = myStrdup(name->id.name);
+    assert(name->type == ST_ID);
+    c->className = myStrdup(name->u.id.name);
     freeExprUnit(name);
 
     assert(instvars->type == ST_STRING);
-    c->instVarNamesCount = tokenizeStString(instvars->string.value, &c->instVarNames);
+    c->instVarNamesCount = tokenizeStString(instvars->u.string.value, &c->instVarNames);
     freeExprUnit(instvars);
 
     return c;
