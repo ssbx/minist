@@ -16,8 +16,6 @@ FLEXFLAGS  = --outfile=scanner.yy.c --header-file=scanner.yy.h
 OBJS  = parser.tab.o scanner.yy.o compiler.o pprinter.o bytecodes.o \
         minist-img-gen.o
 
-include depends.mk
-
 minist-img-gen: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o minist-img-gen
 
@@ -30,9 +28,9 @@ parser.tab.c parser.tab.h: parser.y nodes.h
 scanner.yy.c scanner.yy.h: scanner.l parser.tab.h
 	$(FLEX) $(FLEXFLAGS) scanner.l
 
+include depends.mk
 
 .PHONY: run clean depends check
-
 run: minist-img-gen
 	./minist-img-gen files/Test.st
 
