@@ -8,6 +8,7 @@
  */
 #ifndef PARSER_NODES
 #define PARSER_NODES
+struct ClassFile;
 struct ClassHeader;
 struct ClassComment;
 struct MethodCategory;
@@ -21,6 +22,7 @@ struct UnaryMsg;
 struct BinaryMsg;
 struct Cascade;
 
+void nodes_freeClassFile(struct ClassFile*);
 
 /*
  * Represent one file of a smalltalk class.
