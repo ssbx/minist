@@ -35,6 +35,7 @@ struct ClassFile {
     struct ClassClassHeader *classHeader;
     struct MethodCategory   *classCategories;
     char                    *comment;
+    struct ExprUnit         *init;
 };
 
 
@@ -73,7 +74,7 @@ struct ClassComment {
 struct MethodCategory {
     struct MethodCategory *next;
     char                  *name;
-    char                  *classname; // wtf should be string
+    char                  *classname;
     struct Method         *methods;
 };
 

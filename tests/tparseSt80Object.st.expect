@@ -1,0 +1,508 @@
+-----
+nil subclass: #Object
+	instanceVariableNames: ''
+	classVariableNames: ' DependentsFields  ErrorRecursion '
+	poolDictionaries: ''
+	category: 'Kernel-Objects'!
+
+Object comment: 'Object is the superclass of all classes.  It thus provides default behavior common to all objects, such as class access, copying and printing.'!
+
+!Object methodsFor: 'initialize-release'!
+
+
+
+release
+    ( self  breakDependents) .
+ ! !
+
+!Object methodsFor: 'accessing'!
+
+
+
+at: index 
+    <primitive: 60>
+    (( index  isInteger) ifTrue: [( self  errorSubscriptBounds:  index ) .]) .
+    (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  at: ( index  truncated)) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
+ ! 
+
+at: index put: value 
+    <primitive: 61>
+    (( index  isInteger) ifTrue: [((( index   1) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
+    (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  at: ( index  truncated) put:  value ) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
+ ! 
+
+basicAt: index 
+    <primitive: 60>
+    (( index  isKindOf:  Integer ) ifTrue: [( self  errorSubscriptBounds:  index ) .]) .
+    (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  basicAt: ( index  truncated)) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
+ ! 
+
+basicAt: index put: value 
+    <primitive: 61>
+    (( index  isKindOf:  Integer ) ifTrue: [((( index   1) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
+    (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  basicAt: ( index  truncated) put:  value ) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
+ ! 
+
+basicSize
+    <primitive: 62>
+    ^ 0 .
+ ! 
+
+readFromString: aString 
+    ^ ( self  readFrom: ( ReadStream  on:  aString )) .
+ ! 
+
+size
+    <primitive: 62>
+    ^ 0 .
+ ! 
+
+yourself
+ ! !
+
+!Object methodsFor: 'testing'!
+
+
+
+isInteger
+    ^  false  .
+ ! 
+
+isNil
+    ^  false  .
+ ! 
+
+notNil
+    ^  true  .
+ ! !
+
+!Object methodsFor: 'comparing'!
+
+
+
+= anObject
+    ^ ( self    anObject ) .
+ ! 
+
+ anObject
+    <primitive: 110>
+    ( self  primitiveFailed) .
+ ! 
+
+hash
+    <primitive: 75>
+    ( self  primitiveFailed) .
+ ! 
+
+hashMappedBy: map 
+    ^ ( map  newHashFor: ( self  hash)) .
+ ! 
+
+ anObject
+    ^ ( self  =  anObject    false ) .
+ ! 
+
+ anObject
+    ^ (( self    anObject ) not) .
+ ! !
+
+!Object methodsFor: 'copying'!
+
+
+
+copy
+    ^ ( self  shallowCopy) .
+ ! 
+
+deepCopy
+    | newObject class index |
+     class  := ( self  class) .
+    (( class    Object ) ifTrue: [ ^  self  .]) .
+    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  > 0) .] whileTrue: [( newObject  basicAt:  index  put: (( self  basicAt:  index ) deepCopy)) . index  := ( index  - 1) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
+     index  := ( class  instSize) .
+    ([( index  > 0) .] whileTrue: [( newObject  instVarAt:  index  put: (( self  instVarAt:  index ) deepCopy)) . index  := ( index  - 1) .]) .
+    ^  newObject  .
+ ! 
+
+shallowCopy
+    | class newObject index |
+     class  := ( self  class) .
+    (( class    Object ) ifTrue: [ ^  self  .]) .
+    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  > 0) .] whileTrue: [( newObject  basicAt:  index  put: ( self  basicAt:  index )) . index  := ( index  - 1) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
+     index  := ( class  instSize) .
+    ([( index  > 0) .] whileTrue: [( newObject  instVarAt:  index  put: ( self  instVarAt:  index )) . index  := ( index  - 1) .]) .
+    ^  newObject  .
+ ! !
+
+!Object methodsFor: 'dependents access'!
+
+
+
+addDependent: anObject 
+    (( DependentsFields  at:  self  ifAbsent: [( self  setDependents) .]) add:  anObject ) .
+    ^  anObject  .
+ ! 
+
+dependents
+    ^ ( DependentsFields  at:  self  ifAbsent: [( OrderedCollection  new) .]) .
+ ! 
+
+removeDependent: anObject 
+    | dependents |
+     dependents  := ( DependentsFields  at:  self  ifAbsent: [ ^  anObject  .]) .
+    ( dependents  remove:  anObject  ifAbsent: []) .
+    (( dependents  isEmpty) ifTrue: [( self  breakDependents) .]) .
+    ^  anObject  .
+ ! !
+
+!Object methodsFor: 'updating'!
+
+
+
+broadcast: aSymbol 
+    ((( self  dependents)   nil ) ifTrue: [(( self  dependents) do: [ :aDependent |( aDependent  perform:  aSymbol ) .]) .]) .
+ ! 
+
+broadcast: aSymbol with: anObject 
+    ((( self  dependents)   nil ) ifTrue: [(( self  dependents) do: [ :aDependent |( aDependent  perform:  aSymbol  with:  anObject ) .]) .]) .
+ ! 
+
+changed
+    ( self  changed:  self ) .
+ ! 
+
+changed: aParameter 
+    (( self  dependents) do: [ :aDependent |( aDependent  update:  aParameter ) .]) .
+ ! 
+
+changeRequest
+    (( self  dependents) do: [ :dep |(( dep  updateRequest) ifFalse: [ ^  false  .]) .]) .
+    ^  true  .
+ ! 
+
+changeRequestFrom: requestor 
+    (( self  dependents) do: [ :dep |((( dep    requestor ) or: [( dep  updateRequest) .]) ifFalse: [ ^  false  .]) .]) .
+    ^  true  .
+ ! 
+
+update: aParameter 
+    ^  self  .
+ ! 
+
+updateRequest
+    ^  true  .
+ ! !
+
+!Object methodsFor: 'printing'!
+
+
+
+isLiteral
+    ^  false  .
+ ! 
+
+printOn: aStream 
+    | title |
+     title  := ( self  class name) .
+    ( aStream  nextPutAll: (((( title  at: 1) isVowel) ifTrue: ['an ' .] ifFalse: ['a ' .]) ,  title )) .
+ ! 
+
+printString
+    | aStream |
+     aStream  := ( WriteStream  on: ( String  new: 16)) .
+    ( self  printOn:  aStream ) .
+    ^ ( aStream  contents) .
+ ! 
+
+storeOn: aStream 
+    ( aStream  nextPut: $() .
+    (( self  class isVariable) ifTrue: [( aStream  nextPutAll: ('(' , ( self  class name) , ' basicNew: ') ;  store: ( self  basicSize) ;  nextPutAll: ') ') .] ifFalse: [( aStream  nextPutAll: (( self  class name) , ' basicNew')) .]) .
+    (1 to: ( self  class instSize) do: [ :i |( aStream  nextPutAll: ' instVarAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  instVarAt:  i ) ;  nextPut: $;) .]) .
+    (1 to: ( self  basicSize) do: [ :i |( aStream  nextPutAll: ' basicAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  basicAt:  i ) ;  nextPut: $;) .]) .
+    ( aStream  nextPutAll: ' yourself)') .
+ ! 
+
+storeString
+    | aStream |
+     aStream  := ( WriteStream  on: ( String  new: 16)) .
+    ( self  storeOn:  aStream ) .
+    ^ ( aStream  contents) .
+ ! !
+
+!Object methodsFor: 'class membership'!
+
+
+
+class
+    <primitive: 111>
+    ( self  primitiveFailed) .
+ ! 
+
+isKindOf: aClass 
+    ((( self  class)   aClass ) ifTrue: [ ^  true  .] ifFalse: [ ^ (( self  class) inheritsFrom:  aClass ) .]) .
+ ! 
+
+isMemberOf: aClass 
+    ^ (( self  class)   aClass ) .
+ ! 
+
+respondsTo: aSymbol 
+    ^ (( self  class) canUnderstand:  aSymbol ) .
+ ! !
+
+!Object methodsFor: 'message handling'!
+
+
+
+perform: aSymbol 
+    <primitive: 83>
+    ^ ( self  perform:  aSymbol  withArguments: ( Array  new: 0)) .
+ ! 
+
+perform: aSymbol with: anObject 
+    <primitive: 83>
+    ^ ( self  perform:  aSymbol  withArguments: ( Array  with:  anObject )) .
+ ! 
+
+perform: aSymbol with: firstObject with: secondObject 
+    <primitive: 83>
+    ^ ( self  perform:  aSymbol  withArguments: ( Array  with:  firstObject  with:  secondObject )) .
+ ! 
+
+perform: aSymbol with: firstObject with: secondObject with: thirdObject 
+    <primitive: 83>
+    ^ ( self  perform:  aSymbol  withArguments: ( Array  with:  firstObject  with:  secondObject  with:  thirdObject )) .
+ ! 
+
+perform: selector withArguments: anArray 
+    <primitive: 84>
+    ( self  primitiveFailed) .
+ ! !
+
+!Object methodsFor: 'error handling'!
+
+
+
+confirm: aString 
+    | answer |
+     answer  :=  false  .
+    ( BinaryChoice  message:  aString  displayAt: ( Sensor  cursorPoint) centered:  true  ifTrue: [ answer  :=  true  .] ifFalse: [ answer  :=  false  .]) .
+    ^  answer  .
+ ! 
+
+conflictingInheritanceError
+    ( self  error: 'Conflicting methods due to multiple inheritance') .
+ ! 
+
+doesNotUnderstand: aMessage 
+    | status gripe |
+     status  := (( self  class) tryCopyingCodeFor: ( aMessage  selector)) .
+    (( status    #OK) ifTrue: [ ^ ( self  perform: ( aMessage  selector) withArguments: ( aMessage  arguments)) .]) .
+     gripe  := (( status    #HierarchyViolation) ifTrue: [(( aMessage  selector classPart) , ' is not one of my superclasses: ') .] ifFalse: ['Message not understood: ' .]) .
+    ( NotifierView  openContext:  thisContext  label: ( gripe  , ( aMessage  selector)) contents: ( thisContext  shortStack)) .
+    ^ ( self  perform: ( aMessage  selector) withArguments: ( aMessage  arguments)) .
+ ! 
+
+error: aString 
+    ( NotifierView  openContext:  thisContext  label:  aString  contents: ( thisContext  shortStack)) .
+ ! 
+
+halt
+    ( NotifierView  openContext:  thisContext  label: 'Halt encountered.' contents: ( thisContext  shortStack)) .
+ ! 
+
+halt: aString 
+    ( NotifierView  openContext:  thisContext  label:  aString  contents: ( thisContext  shortStack)) .
+ ! 
+
+notify: aString 
+    ( NotifierView  openContext:  thisContext  label: 'Notifier' contents:  aString ) .
+ ! 
+
+primitiveFailed
+    ( self  error: 'a primitive has failed') .
+ ! 
+
+shouldNotImplement
+    ( self  error: 'This message is not appropriate for this object') .
+ ! 
+
+subclassResponsibility
+    ( self  error: 'My subclass should have overridden one of my messages.') .
+ ! !
+
+!Object methodsFor: 'user interface'!
+
+
+
+basicInspect
+    ( InspectorView  open: ( Inspector  inspect:  self )) .
+ ! 
+
+inspect
+    ( self  basicInspect) .
+ ! !
+
+!Object methodsFor: 'system primitives'!
+
+
+
+asOop
+    <primitive: 75>
+    ( self  primitiveFailed) .
+ ! 
+
+become: otherObject 
+    <primitive: 72>
+    ( self  primitiveFailed) .
+ ! 
+
+instVarAt: index 
+    <primitive: 73>
+    ^ ( self  basicAt: ( index  - ( self  class instSize))) .
+ ! 
+
+instVarAt: anInteger put: anObject 
+    <primitive: 74>
+    ^ ( self  basicAt: ( anInteger  - ( self  class instSize)) put:  anObject ) .
+ ! 
+
+nextInstance
+    <primitive: 78>
+    ^  nil  .
+ ! !
+
+!Object methodsFor: 'system simulation'!
+
+
+
+tryPrimitive0
+    <primitive: 007>
+    ^  #primitiveFail .
+ ! 
+
+tryPrimitive1: arg1 
+    <primitive: 007>
+    ^  #primitiveFail .
+ ! 
+
+tryPrimitive2: arg1 with: arg2 
+    <primitive: 007>
+    ^  #primitiveFail .
+ ! 
+
+tryPrimitive3: arg1 with: arg2 with: arg3 
+    <primitive: 007>
+    ^  #primitiveFail .
+ ! 
+
+tryPrimitive4: arg1 with: arg2 with: arg3 with: arg4 
+    <primitive: 007>
+    ^  #primitiveFail .
+ ! !
+
+!Object methodsFor: 'private'!
+
+
+
+breakDependents
+    ( DependentsFields  removeKey:  self  ifAbsent: []) .
+ ! 
+
+errorImproperStore
+    ( self  error: 'Improper store into indexable object') .
+ ! 
+
+errorNonIntegerIndex
+    ( self  error: 'only integers should be used as indices') .
+ ! 
+
+errorSubscriptBounds: index 
+    ( self  error: ('subscript is out of bounds: ' , ( index  printString))) .
+ ! 
+
+forkEmergencyEvaluatorAt: priority 
+    | stream char |
+    ([( Display  white: ((0 @ 0) extent: (1024 @ 36))) .(('EMERGENCY EVALUATOR (priority ' , ( priority  printString) , ') -- type an expression terminated by ESC') displayAt: (50 @ 0)) .( Display  reverse: ((0 @ 0) extent: (1024 @ 36))) . stream  := ( WriteStream  on: ( String  new)) .([([( Sensor  keyboardPressed) .] whileFalse) .(( Sensor  keyboard) = (160 asCharacter)) .] whileFalse: [(( char  = ( Character  backspace)) ifTrue: [( stream  skip: -1) .( Display  black: ((0 @ 18) extent: (1024 @ 18))) .] ifFalse: [( stream  nextPut:  char ) .]) .(( stream  contents) displayAt: (50 @ 18)) .]) .( Display  black: ((0 @ 0) extent: (1024 @ 18))) .((( Compiler  evaluate: ( stream  contents)) printString) displayAt: (50 @ 0)) .] forkAt:  priority ) .
+ ! 
+
+mustBeBoolean
+    ( self  error: 'NonBoolean receiver--proceed for truth.') .
+    ^  true  .
+ ! 
+
+nilFields
+    (( self  class isPointers) ifFalse: [ ^  self  .]) .
+    (1 to: ( self  basicSize) do: [ :index |( self  basicAt:  index  put:  nil ) .]) .
+    (1 to: ( self  class instSize) do: [ :index |( self  instVarAt:  index  put:  nil ) .]) .
+ ! 
+
+primitiveError: aString 
+    | context key |
+    ( Transcript  cr) .
+    ( Transcript  show: '**System Error Handling Failed** ') .
+    ( Transcript  show:  aString ) .
+    ( Transcript  cr) .
+     context  := ( thisContext  sender sender) .
+    (3 timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .
+    ([( Transcript  show: '**type <s> for more stack; anything else restarts scheduler**') .( Transcript  cr) . key  := ( Sensor  keyboard) .( key  = $s | ( key  = $S)) .] whileTrue: [(5 timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .]) .
+    ( ScheduledControllers  searchForActiveController) .
+ ! 
+
+setDependents
+    | dependents |
+     dependents  := ( OrderedCollection  new) .
+    ( DependentsFields  add: ( Association  key:  self  value:  dependents )) .
+    ^  dependents  .
+ ! 
+
+species
+    ^ ( self  class) .
+ ! !
+
+"= = = == = "!
+Object class instanceVariableNames: '' !
+!Object class methodsFor: 'class initialization'!
+
+
+
+initialize
+    (( self  confirm: 'Do you really want to initialize
+class Object?  It will reset all dependents.') ifTrue: [( self  initializeDependentsFields) .( self  initializeErrorRecursion) .]) .
+ ! !
+!Object class methodsFor: 'instance creation'!
+
+
+
+readFrom: aStream 
+    | object |
+     object  := ( Compiler  evaluate:  aStream ) .
+    (( object  isKindOf:  self ) ifFalse: [( self  error: (( self  name) , ' expected')) .]) .
+    ^  object  .
+ ! !
+!Object class methodsFor: 'documentation'!
+
+
+
+howToModifyPrimitives
+    ( self  error: 'comment only') .
+ ! 
+
+whatIsAPrimitive
+    ( self  error: 'comment only') .
+ ! !
+!Object class methodsFor: 'private'!
+
+
+
+initializeDependentsFields
+     DependentsFields  := ( IdentityDictionary  new: 4) .
+ ! 
+
+initializeErrorRecursion
+     ErrorRecursion  :=  false  .
+ ! !
+
+
+Object initialize!
+

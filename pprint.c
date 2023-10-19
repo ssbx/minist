@@ -309,5 +309,11 @@ void pprinter_print(struct ClassFile *cf) {
             mmm = mmm->next;
         }
     }
+    if (cf->init) {
+        struct ExprUnit *receiver = cf->init->u.unary.receiver;
+        struct UnaryMsg *msg = cf->init->u.unary.msgs;
+        printf("\n\n%s %s!\n", receiver->u.id.name, msg->msg);
+    }
+
     printf( "\n");
 }

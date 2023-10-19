@@ -62,7 +62,7 @@ struct ClassClassHeader* mkClassClassHeader(struct ExprUnit*,struct ExprUnit*);
 struct MethodCategory* mkMethodCategory(
                             struct ExprUnit*,struct ExprUnit*, struct Method*);
 struct ClassFile* mkFile(struct ClassHeader*, struct ClassComment*,
-     struct MethodCategory*, struct ClassClassHeader*, struct MethodCategory*);
+     struct MethodCategory*, struct ClassClassHeader*, struct MethodCategory*, struct ExprUnit*);
 struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
       struct ExprUnit*, struct ExprUnit*, struct ExprUnit*,  struct ExprUnit*);
 %}
@@ -103,7 +103,7 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
 %type <uexpr> exprs expro expr2 expr1 unaryexpr msgexpr keyexpr id unit prim prim2
 %type <uexpr> binexpr block string charconst integer symconst literals
 %type <uexpr> primitive arrayconst keyselsym
-%type <uexpr> arrayelement arrayelements array arraysym
+%type <uexpr> arrayelement arrayelements array arraysym clsinit
 %type <blockarg> blockargs
 %type <binmsg> binmsg
 %type <keymsg> keymsg methodkeymsg
@@ -119,13 +119,17 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
  * The file from class declaration, to method cathegories
  * file
  *****************************************************************************/
-file: clsheader classcomment            {$$ = mkFile($1,$2,NULL,NULL,NULL);}
-    | clsheader classcomment categories {$$ = mkFile($1,$2,$3,NULL,NULL);}
-    | clsheader classcomment categories '!' {$$ = mkFile($1,$2,$3,NULL,NULL);}
+file: clsheader classcomment            {$$ = mkFile($1,$2,NULL,NULL,NULL,NULL);}
+    | clsheader classcomment categories {$$ = mkFile($1,$2,$3,NULL,NULL,NULL);}
+    | clsheader classcomment categories '!' {$$ = mkFile($1,$2,$3,NULL,NULL,NULL);}
     | clsheader classcomment categories '!' clsclsheader
-            { $$ = mkFile($1, $2, $3, $5, NULL); }
+            { $$ = mkFile($1, $2, $3, $5, NULL, NULL); }
     | clsheader classcomment categories '!' clsclsheader clscategories
-            { $$ = mkFile($1, $2, $3, $5, $6); }
+            { $$ = mkFile($1, $2, $3, $5, $6, NULL); }
+    | clsheader classcomment categories '!' clsclsheader clscategories clsinit
+            { $$ = mkFile($1, $2, $3, $5, $6, $7); }
+
+clsinit: id id '!' { $$ = mkUnaryExpr($1, mkUnaryMsg($2)); }
 
 /******************************************************************************
  * file -> clsheader
@@ -773,7 +777,8 @@ mkFile(
         struct ClassComment     *comment,
         struct MethodCategory   *category,
         struct ClassClassHeader *clshead,
-        struct MethodCategory   *clscategories)
+        struct MethodCategory   *clscategories,
+        struct ExprUnit         *init)
 {
     struct ClassFile *f = malloc(sizeof(struct ClassFile));
     f->header = head;
@@ -784,6 +789,7 @@ mkFile(
     f->categories = category;
     f->classHeader = clshead;
     f->classCategories = clscategories;
+    f->init = init;
     parsed_file = f;
     return f;
 }

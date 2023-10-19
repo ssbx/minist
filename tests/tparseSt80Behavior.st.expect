@@ -1,0 +1,782 @@
+-----
+Object subclass: #Behavior
+	instanceVariableNames: ' superclass  methodDict  format  subclasses '
+	classVariableNames: ' SelectorsOfConflictMethods  SelectorsOfCopiedMethods  SelectorsOfDirectedMethods '
+	poolDictionaries: ''
+	category: 'Kernel-Classes'!
+
+Behavior comment: 'Instance Variables:
+	superclass	<Behavior> links the chain of inheritance
+	methodDict	<IdentityDictionary> associates message names with methods
+	format		<Integer> encodes storage layout of instances
+	subclasses	<Set> back-pointers to the class' subclasses
+
+Behavior provides the minimum state necessary for compiling methods, and creating and running instances.  Most objects are created as instances of the more fully supported subclass, Class, but Behavior is a good starting point for providing instance-specific behavior (as in Metaclass).'!
+
+!Behavior methodsFor: 'initialize-release'!
+
+
+
+obsolete
+     methodDict  := ( MethodDictionary  new) .
+    (( self  superclasses) do: [ :each |( each  removeSubclass:  self ) .]) .
+    ( self  removeFromInheritanceTables) .
+ ! !
+
+!Behavior methodsFor: 'accessing'!
+
+
+
+format
+    ^  format  .
+ ! !
+
+!Behavior methodsFor: 'testing'!
+
+
+
+instSize
+    ^ ( format  bitAnd: 255) .
+ ! 
+
+isBits
+    ^ ( format  noMask: -16384) .
+ ! 
+
+isBytes
+    ^ ( format  noMask: 8192) .
+ ! 
+
+isFixed
+    ^ ( self  isVariable not) .
+ ! 
+
+isPointers
+    ^ ( self  isBits not) .
+ ! 
+
+isVariable
+    ^ (( format  bitAnd: 4096)  0) .
+ ! 
+
+isWords
+    ^ ( self  isBytes not) .
+ ! !
+
+!Behavior methodsFor: 'copying'!
+
+
+
+copy
+    | myCopy savedSubclasses |
+     savedSubclasses  :=  subclasses  .
+     subclasses  :=  nil  .
+     myCopy  := ( self  shallowCopy) .
+     subclasses  :=  savedSubclasses  .
+    ^ ( myCopy  methodDictionary: ( methodDict  copy)) .
+ ! !
+
+!Behavior methodsFor: 'printing'!
+
+
+
+printHierarchy
+    | aStream index supers |
+     index  := 0 .
+     aStream  := ( WriteStream  on: ( String  new: 16)) .
+    (( self  allDynamicSuperclasses) reverseDo: [ :aClass |( aStream  crtab:  index ) . index  := ( index  + 1) .( aStream  nextPutAll: ( aClass  name)) .( aStream  space) .( aStream  print: ( aClass  instVarNames)) . supers  := ( aClass  superclasses) .((( supers  size) > 1) ifTrue: [( aStream  nextPutAll: '  [also a ') .(( supers  copyFrom: 2 to: ( supers  size)) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .]) .
+    ( aStream  cr) .
+    ( self  printSubclassesOn:  aStream  callingSuperclass: ( self  dynamicSuperclass) level:  index ) .
+    ^ ( aStream  contents) .
+ ! 
+
+printOn: aStream 
+    ( aStream  nextPutAll: 'a descendent of ') .
+    ( superclass  printOn:  aStream ) .
+ ! !
+
+!Behavior methodsFor: 'creating class hierarchy'!
+
+
+
+addSubclass: aSubclass 
+    ((( aSubclass  superclasses) includes:  self ) ifTrue: [(( subclasses    nil ) ifTrue: [ subclasses  := ( Set  with:  aSubclass ) .] ifFalse: [( subclasses  add:  aSubclass ) .]) .] ifFalse: [( self  error: (( aSubclass  name) , ' is not my subclass')) .]) .
+ ! 
+
+removeSubclass: aSubclass 
+    (( subclasses    nil ) ifFalse: [( subclasses  remove:  aSubclass  ifAbsent: []) .(( subclasses  isEmpty) ifTrue: [ subclasses  :=  nil  .]) .]) .
+ ! 
+
+superclass: aClass 
+    (( aClass  isKindOf:  Behavior ) ifTrue: [ superclass  :=  aClass  .] ifFalse: [( self  error: 'superclass must be a class-describing object') .]) .
+ ! !
+
+!Behavior methodsFor: 'creating method dictionary'!
+
+
+
+addSelector: selector withMethod: compiledMethod 
+    | wasThere |
+     wasThere  := ( methodDict  includesKey:  selector ) .
+    ( methodDict  at:  selector  put:  compiledMethod ) .
+    ( self  flushCache) .
+    ((( SelectorsOfConflictMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) ifTrue: [( self  removeClass:  self  selector:  selector  in:  SelectorsOfConflictMethods ) .]) .
+    ((( SelectorsOfCopiedMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) ifTrue: [( self  removeClass:  self  selector:  selector  in:  SelectorsOfCopiedMethods ) .]) .
+    ( wasThere  ifTrue: [( self  checkChangeSelector:  selector ) .] ifFalse: [(( self  subclasses) do: [ :sub |( sub  checkSuperAddSelector:  selector ) .]) .]) .
+ ! 
+
+addSelectorUnchecked: selector withMethod: compiledMethod 
+    ( methodDict  at:  selector  put:  compiledMethod ) .
+    ( self  flushCache) .
+ ! 
+
+methodDictionary: aDictionary 
+     methodDict  :=  aDictionary  .
+ ! 
+
+removeSelector: selector 
+    ( methodDict  removeKey:  selector ) .
+    ( self  flushCache) .
+    ( self  checkChangeSelector:  selector ) .
+ ! 
+
+removeSelectorUnchecked: selector 
+    ( methodDict  removeKey:  selector ) .
+    ( self  flushCache) .
+ ! 
+
+tryCopyingCodeFor: selector 
+    | classPart whichClass simpleSelector descr |
+    (( selector  isCompound) ifFalse: [ ^  #NotFound .]) .
+     classPart  := ( selector  classPart) .
+     simpleSelector  := ( selector  selectorPart) .
+    (( classPart    #all) ifTrue: [( self  compileBroadcastCodeFor:  simpleSelector ) .( self  insertClass:  self  selector:  simpleSelector  in:  SelectorsOfDirectedMethods ) . ^  #OK .]) .
+    (( classPart    #super) ifTrue: [ descr  := ( self  superMethodDescriptionAt:  simpleSelector ) .] ifFalse: [ whichClass  := ( Smalltalk  at:  classPart ) .(( self  isMeta) ifTrue: [ whichClass  := ( whichClass  class) .]) .(( self  inheritsFrom:  whichClass ) ifFalse: [ ^  #HierarchyViolation .]) . descr  := ( whichClass  methodDescriptionAt:  simpleSelector ) .]) .
+    (( descr  isBad) ifTrue: [ ^  #NotFound .]) .
+    ( self  compileUnchecked: ( classPart  , '.' , ( descr  sourceCode))) .
+    ( self  insertClass:  self  selector:  simpleSelector  in:  SelectorsOfDirectedMethods ) .
+    ^  #OK .
+ ! !
+
+!Behavior methodsFor: 'instance creation'!
+
+
+
+basicNew
+    <primitive: 70>
+    (( self  isVariable) ifTrue: [ ^ ( self  basicNew: 0) .]) .
+    ( self  primitiveFailed) .
+ ! 
+
+basicNew: anInteger 
+    <primitive: 71>
+    ( self  primitiveFailed) .
+ ! 
+
+new
+    <primitive: 70>
+    (( self  isVariable) ifTrue: [ ^ ( self  new: 0) .]) .
+    ( self  primitiveFailed) .
+ ! 
+
+new: anInteger 
+    <primitive: 71>
+    ( self  primitiveFailed) .
+ ! !
+
+!Behavior methodsFor: 'accessing class hierarchy'!
+
+
+
+allDynamicSuperclasses
+    | temp |
+    (( superclass    nil ) ifTrue: [ ^ ( OrderedCollection  new) .] ifFalse: [ temp  := ( superclass  allDynamicSuperclasses) .( temp  addFirst:  superclass ) . ^  temp  .]) .
+ ! 
+
+allSubclasses
+    | coll |
+     coll  := ( OrderedCollection  new) .
+    ( coll  addAll: ( self  subclasses)) .
+    (( self  subclasses) do: [ :eachSubclass |( coll  addAll: ( eachSubclass  allSubclasses)) .]) .
+    ^  coll  .
+ ! 
+
+allSuperclasses
+    | coll |
+     coll  := ( OrderedCollection  new) .
+    ( self  allSuperclassesInto:  coll ) .
+    ^  coll  .
+ ! 
+
+allSuperclassesInto: orderedCollection 
+    | mysupers |
+     mysupers  := ( self  superclasses) .
+    ( mysupers  do: [ :each |( each  allSuperclassesInto:  orderedCollection ) .]) .
+    ( mysupers  reverseDo: [ :each |(( orderedCollection  includes:  each ) ifFalse: [( orderedCollection  addFirst:  each ) .]) .]) .
+ ! 
+
+dynamicSuperclass
+    ^  superclass  .
+ ! 
+
+hasMultipleSuperclasses
+    ^  false  .
+ ! 
+
+subclasses
+    (( subclasses    nil ) ifTrue: [ ^ ( Set  new) .] ifFalse: [ ^ ( subclasses  copy) .]) .
+ ! 
+
+superclass
+    ^  superclass  .
+ ! 
+
+superclasses
+    (( superclass    nil ) ifTrue: [ ^ # .]) .
+    (( self  hasMultipleSuperclasses) ifTrue: [ ^ (( Array  with:  superclass ) , ( self  class otherSuperclasses)) .]) .
+    ^ ( Array  with:  superclass ) .
+ ! 
+
+withAllSubclasses
+    | subs |
+     subs  := ( self  allSubclasses) .
+    ( subs  addFirst:  self ) .
+    ^  subs  .
+ ! 
+
+withAllSuperclasses
+    | subs |
+     subs  := ( self  allSuperclasses) .
+    ( subs  addFirst:  self ) .
+    ^  subs  .
+ ! !
+
+!Behavior methodsFor: 'accessing method dictionary'!
+
+
+
+allSelectors
+    | aSet |
+     aSet  := ( Set  new) .
+    (( self  withAllSuperclasses) do: [ :each |( aSet  addAll: ( each  selectors)) .]) .
+    ^  aSet  .
+ ! 
+
+checkChangeSelector: selector 
+    | descr classes class |
+    (( SelectorsOfCopiedMethods  at:  selector  ifAbsent: [( Array  new) .]) do: [ :class |(( class  inheritsFrom:  self ) ifTrue: [(( class  checkMethodFor:  selector ) ifFalse: [( Transcript  cr ;  show: ('conflicting methods for ' ,  selector  , ' in ' , ( class  name))) .]) .]) .]) .
+    (( SelectorsOfDirectedMethods  at:  selector  ifAbsent: [( Array  new) .]) do: [ :class |(( class  inheritsFrom:  self ) ifTrue: [(( class  compoundSelectorsMatching:  selector ) do: [ :sel |( class  removeSelectorUnchecked:  sel ) .]) .( self  removeClass:  class  selector:  selector  in:  SelectorsOfDirectedMethods ) .]) .]) .
+ ! 
+
+checkSuperAddSelector: selector 
+    | local |
+     local  := ( self  includesSelector:  selector ) .
+    (( self  hasMultipleSuperclasses) ifFalse: [( local  ifTrue: [ ^  self  .]) . ^ (( self  subclasses) do: [ :sub |( sub  checkSuperAddSelector:  selector ) .]) .]) .
+    (( self  checkMethodFor:  selector ) ifFalse: [( Transcript  cr ;  show: ('conflicting methods for ' ,  selector  , ' in ' , ( self  name))) .]) .
+    ( local  ifTrue: [ ^  self  .]) .
+    ^ (( self  subclasses) do: [ :sub |( sub  checkSuperAddSelector:  selector ) .]) .
+ ! 
+
+compiledMethodAt: selector 
+    ^ ( methodDict  at:  selector ) .
+ ! 
+
+dynamicMethodDescriptionAt: selector 
+    (( methodDict  includesKey:  selector ) ifTrue: [ ^ ( MethodDescription  whichClass:  self  selector:  selector ) .]) .
+    (( superclass    nil ) ifTrue: [ ^ ( MethodDescription  makeMethodNotImplemented) .]) .
+    ^ ( superclass  dynamicMethodDescriptionAt:  selector ) .
+ ! 
+
+methodDescriptionAt: selector 
+    | local copied conflict |
+     local  := ( methodDict  includesKey:  selector ) .
+     copied  := (( SelectorsOfCopiedMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) .
+     conflict  := (( SelectorsOfConflictMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) .
+    (( local  & ( copied  not) & ( conflict  not)) ifTrue: [ ^ ( MethodDescription  whichClass:  self  selector:  selector ) .]) .
+    ^ ( self  superMethodDescriptionAt:  selector ) .
+ ! 
+
+selectorAtMethod: method setClass: classResultBlock 
+    | sel |
+     sel  := ( methodDict  keyAtValue:  method  ifAbsent: [(( superclass    nil ) ifTrue: [( classResultBlock  value:  self ) . ^ ( self  defaultSelectorForMethod:  method ) .]) . sel  := ( superclass  selectorAtMethod:  method  setClass:  classResultBlock ) .(( sel   ( self  defaultSelectorForMethod:  method )) ifTrue: [( classResultBlock  value:  self ) .]) . ^  sel  .]) .
+    ( classResultBlock  value:  self ) .
+    ^  sel  .
+ ! 
+
+selectors
+    ^ ( methodDict  keys) .
+ ! 
+
+sourceCodeAt: messageSelector 
+    ^ ( self  sourceCodeForMethod: ( methodDict  at:  messageSelector ) at:  messageSelector ) .
+ ! 
+
+sourceCodeForMethod: method at: messageSelector 
+    | newSource index |
+    (( Sensor  leftShiftDown) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [ newSource  := ( method  getSource) .(( newSource    nil ) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [((( newSource  at: ( newSource  size)) isSeparator) ifTrue: [ index  := ( newSource  size) .([((( newSource  at:  index ) isSeparator) and: [( index  > 1) .]) .] whileTrue: [ index  := ( index  - 1) .]) . newSource  := ( newSource  copyFrom: 1 to:  index ) .]) .]) .]) .
+    ^  newSource  .
+ ! 
+
+sourceMethodAt: selector 
+    ^ ((( self  sourceCodeAt:  selector ) asText) makeSelectorBoldIn:  self ) .
+ ! 
+
+superMethodDescriptionAt: selector 
+    | descr result |
+     result  := ( MethodDescription  makeMethodNotImplemented) .
+    (( self  superclasses) do: [ :each | descr  := ( each  methodDescriptionAt:  selector ) .(( descr  isMethodNotImplemented) ifFalse: [(( result  isMethodNotImplemented) ifTrue: [ result  :=  descr  .] ifFalse: [(( result  =  descr ) ifFalse: [ ^ ( MethodDescription  makeConflictingMethods) .]) .]) .]) .]) .
+    ^  result  .
+ ! !
+
+!Behavior methodsFor: 'accessing instances and variables'!
+
+
+
+allClassVarNames
+    ^ ( superclass  allClassVarNames) .
+ ! 
+
+allInstances
+    | aCollection |
+     aCollection  := ( OrderedCollection  new) .
+    ( self  allInstancesDo: [ :x |(( x    aCollection ) ifFalse: [( aCollection  add:  x ) .]) .]) .
+    ^  aCollection  .
+ ! 
+
+allInstVarNames
+    | names |
+     names  := ( OrderedCollection  new) .
+    ( self  accumulateInstVarNames:  names  traversedClasses: ( Set  new)) .
+    ^  names  .
+ ! 
+
+allSharedPools
+    ^ ( superclass  allSharedPools) .
+ ! 
+
+allVarNamesSelect: selectBlock 
+    | set |
+     set  := (( self  classPool keys) select:  selectBlock ) .
+    (( self  sharedPools) do: [ :pool |( set  addAll: (( pool  keys) select:  selectBlock )) .]) .
+    (( superclass    nil ) ifTrue: [( set  addAll: (( Smalltalk  keys) select:  selectBlock )) .] ifFalse: [( set  addAll: ( superclass  allVarNamesSelect:  selectBlock )) .]) .
+    ^  set  .
+ ! 
+
+classVarNames
+    ^ ( Set  new) .
+ ! 
+
+instanceCount
+    | count |
+     count  := 0 .
+    ( self  allInstancesDo: [ :x | count  := ( count  + 1) .]) .
+    ^  count  .
+ ! 
+
+instVarNames
+    | mySize superSize |
+     mySize  := ( self  instSize) .
+     superSize  := (( superclass    nil ) ifTrue: [0 .] ifFalse: [( superclass  instSize) .]) .
+    (( mySize  =  superSize ) ifTrue: [ ^ # .]) .
+    ^ ((( superSize  + 1) to:  mySize ) collect: [ :i |('inst' , ( i  printString)) .]) .
+ ! 
+
+sharedPools
+    ^ ( Set  new) .
+ ! 
+
+someInstance
+    <primitive: 77>
+    ^  nil  .
+ ! 
+
+subclassInstVarNames
+    | vars |
+     vars  := ( Set  new) .
+    (( self  allSubclasses) do: [ :aSubclass |( vars  addAll: ( aSubclass  instVarNames)) .]) .
+    ^  vars  .
+ ! !
+
+!Behavior methodsFor: 'testing class hierarchy'!
+
+
+
+inheritsFrom: aClass 
+    (( self  superclasses) do: [ :each |((( each    aClass ) or: [( each  inheritsFrom:  aClass ) .]) ifTrue: [ ^  true  .]) .]) .
+    ^  false  .
+ ! 
+
+kindOfSubclass
+    (( self  isVariable) ifTrue: [(( self  isBits) ifTrue: [(( self  isBytes) ifTrue: [ ^ ' variableByteSubclass: ' .] ifFalse: [ ^ ' variableWordSubclass: ' .]) .] ifFalse: [ ^ ' variableSubclass: ' .]) .] ifFalse: [ ^ ' subclass: ' .]) .
+ ! !
+
+!Behavior methodsFor: 'testing method dictionary'!
+
+
+
+canUnderstand: selector 
+    (( self  includesSelector:  selector ) ifTrue: [ ^  true  .]) .
+    (( superclass    nil ) ifTrue: [ ^  false  .]) .
+    ^ ( superclass  canUnderstand:  selector ) .
+ ! 
+
+hasMethods
+    ^ (( methodDict  size) > 0) .
+ ! 
+
+includesSelector: aSymbol 
+    ^ ( methodDict  includesKey:  aSymbol ) .
+ ! 
+
+scopeHas: varName ifTrue: assocBlock 
+    | assoc |
+    (( self  withAllSuperclasses) do: [ :sup |(( sup  poolHas:  varName  ifTrue:  assocBlock ) ifTrue: [ ^  true  .]) .]) .
+     assoc  := ( Smalltalk  associationAt:  varName  ifAbsent: []) .
+    (( assoc    nil ) ifFalse: [( assocBlock  value:  assoc ) . ^  true  .]) .
+    ^  false  .
+ ! 
+
+whichClassIncludesSelector: aSymbol 
+    (( methodDict  includesKey:  aSymbol ) ifTrue: [ ^  self  .]) .
+    (( superclass    nil ) ifTrue: [ ^  nil  .]) .
+    ^ ( superclass  whichClassIncludesSelector:  aSymbol ) .
+ ! 
+
+whichSelectorsAccess: instVarName 
+    | instVarIndex |
+     instVarIndex  := (( self  allInstVarNames) indexOf:  instVarName  ifAbsent: [ ^ ( Set  new) .]) .
+    ^ (( methodDict  keys) select: [ :sel |((( methodDict  at:  sel ) readsField:  instVarIndex ) or: [(( methodDict  at:  sel ) writesField:  instVarIndex ) .]) .]) .
+ ! 
+
+whichSelectorsReferTo: literal 
+    | special |
+     special  := ( Smalltalk  hasSpecialSelector:  literal  ifTrueSetByte: [ :byte |]) .
+    ^ ( self  whichSelectorsReferTo:  literal  special:  special  byte:  byte ) .
+ ! 
+
+whichSelectorsReferTo: literal special: specialFlag byte: specialByte 
+    | who method methodArray index arraySize |
+     who  := ( OrderedCollection  new) .
+     methodArray  := ( methodDict  methodArray) .
+     arraySize  := ( methodArray  size) .
+     index  := 0 .
+    ([(( index  + 1)   arraySize ) .] whileTrue: [((( methodArray  at:  index )   nil ) ifFalse: [((( method  refersToLiteral:  literal ) or: [( specialFlag  and: [( method  scanFor:  specialByte ) .]) .]) ifTrue: [( who  add: ( methodDict  basicAt:  index )) .]) .]) .]) .
+    ^  who  .
+ ! !
+
+!Behavior methodsFor: 'compiling'!
+
+
+
+compile: code notifying: requestor trailer: bytes 
+    ^ ( self  compile:  code  notifying:  requestor  trailer:  bytes  ifFail: [ ^  nil  .]) .
+ ! 
+
+compile: code notifying: requestor trailer: bytes ifFail: failBlock 
+    | methodNode selector |
+     methodNode  := (( self  compilerClass new) compile:  code  in:  self  notifying:  requestor  ifFail:  failBlock ) .
+     selector  := ( methodNode  selector) .
+    ( self  addSelector:  selector  withMethod: ( methodNode  generate:  bytes )) .
+    ^  selector  .
+ ! 
+
+compileAll
+    ^ ( self  compileAllFrom:  self ) .
+ ! 
+
+compileAllFrom: oldClass 
+    (( self  selectors) do: [ :sel |( self  recompile:  sel  from:  oldClass ) .]) .
+ ! 
+
+compileAllSubclasses
+    (( self  allSubclasses) do: [ :aSubclass |( aSubclass  compileAll) .]) .
+ ! 
+
+compileBroadcastCodeFor: selector 
+    | implementors strm keywords argNames |
+     implementors  := (( self  withAllSuperclasses) select: [ :each |( each  includesSelector:  selector ) .]) .
+     argNames  := ( Array  new: ( selector  numArgs)) .
+    (1 to: ( argNames  size) do: [ :i |( argNames  at:  i  put: ('arg' , ( i  printString))) .]) .
+     strm  := ( WriteStream  on: ( String  new: 500)) .
+    ( strm  nextPutAll: 'all.') .
+    ((( argNames  size) = 0) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .(1 to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .
+    ( implementors  do: [ :each |( strm  cr ;  nextPutAll:  ;  nextPutAll: 'self ' ;  nextPutAll: ( each  name) ;  nextPut: $.) .((( argNames  size) = 0) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .(1 to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .( strm  nextPut: $.) .]) .
+    ( self  compileUnchecked: ( strm  contents)) .
+ ! 
+
+compilerClass
+    ^  Compiler  .
+ ! 
+
+compileUnchecked: code 
+    | selector methodNode |
+     methodNode  := (( self  compilerClass new) compile:  code  in:  self  notifying:  nil  ifFail: [ ^  nil  .]) .
+     selector  := ( methodNode  selector) .
+    ( self  addSelectorUnchecked:  selector  withMethod: ( methodNode  generate: #(0 0 0 ))) .
+    ^  selector  .
+ ! 
+
+decompile: selector 
+    ^ (( self  decompilerClass new) decompile:  selector  in:  self ) .
+ ! 
+
+decompilerClass
+    ^  Decompiler  .
+ ! 
+
+evaluatorClass
+    ^  Compiler  .
+ ! 
+
+parserClass
+    ^ ( self  compilerClass preferredParserClass) .
+ ! 
+
+poolHas: varName ifTrue: assocBlock 
+    ^  false  .
+ ! 
+
+recompile: selector 
+    ^ ( self  recompile:  selector  from:  self ) .
+ ! 
+
+recompile: selector from: oldClass 
+    | method trailer methodNode |
+     method  := ( oldClass  compiledMethodAt:  selector ) .
+     trailer  := (((( method  size) - 2) to: ( method  size)) collect: [ :i |( method  at:  i ) .]) .
+     methodNode  := (( self  compilerClass new) compile: ( oldClass  sourceCodeAt:  selector ) in:  self  notifying:  nil  ifFail: []) .
+    (( methodNode    nil ) ifTrue: [ ^ ( self  recompile:  selector ) .]) .
+    (( selector   ( methodNode  selector)) ifFalse: [( self  error: 'selector changed!!') .]) .
+    ( self  addSelector:  selector  withMethod: ( methodNode  generate:  trailer )) .
+ ! 
+
+sourceCodeTemplate
+    ^ 'message selector and argument names
+	"comment stating purpose of message"
+
+	| temporary variable names |
+	statements' .
+ ! 
+
+subclassDefinerClass
+    ^  Compiler  .
+ ! !
+
+!Behavior methodsFor: 'enumerating'!
+
+
+
+allAccessesTo: instVarName 
+    | coll |
+     coll  := ( OrderedCollection  new) .
+    (( Cursor  execute) showWhile: [((( self  withAllSuperclasses reverse) , ( self  allSubclasses)) do: [ :class |(( class  whichSelectorsAccess:  instVarName ) do: [ :sel |(( sel    #DoIt) ifTrue: [( coll  add: (( class  name) , ' ' ,  sel )) .]) .]) .]) .]) .
+    ^  coll  .
+ ! 
+
+allCallsOn: aLiteral 
+    | aSortedCollection special |
+     aSortedCollection  := ( SortedCollection  new) .
+     special  := ( Smalltalk  hasSpecialSelector:  aLiteral  ifTrueSetByte: [ :byte |]) .
+    ((( self  withAllSuperclasses reverse) , ( self  allSubclasses)) do: [ :class |(( class  whichSelectorsReferTo:  aLiteral  special:  special  byte:  byte ) do: [ :sel |(( sel    #DoIt) ifTrue: [( aSortedCollection  add: (( class  name) , ' ' ,  sel )) .]) .]) .((( class  class) whichSelectorsReferTo:  aLiteral  special:  special  byte:  byte ) do: [ :sel |(( sel    #DoIt) ifTrue: [( aSortedCollection  add: (( class  class name) , ' ' ,  sel )) .]) .]) .]) .
+    ^  aSortedCollection  .
+ ! 
+
+allInstancesDo: aBlock 
+    | inst next |
+     inst  := ( self  someInstance) .
+    (( inst    nil ) ifFalse: [([ next  := ( inst  nextInstance) .( aBlock  value:  inst ) .( next    nil ) .] whileFalse: [ inst  :=  next  .]) .]) .
+    ((( nil  class)   self ) ifTrue: [( aBlock  value:  nil ) .]) .
+ ! 
+
+allSubclassesDo: aBlock 
+    (( self  subclasses) do: [ :cl |( aBlock  value:  cl ) .( cl  allSubclassesDo:  aBlock ) .]) .
+ ! 
+
+allSubInstancesDo: aBlock 
+    ( self  allSubclassesDo: [ :sub |( sub  allInstancesDo:  aBlock ) .]) .
+ ! 
+
+browseAllAccessesTo: instanceVariable 
+    ( BrowserView  openListBrowserOn: ( self  allAccessesTo:  instanceVariable ) label:  instanceVariable  initialSelection:  instanceVariable ) .
+ ! 
+
+browseAllCallsOn: aSymbol 
+    | label key |
+    (( aSymbol  isMemberOf:  Association ) ifTrue: [ key  := ( aSymbol  key) . label  := ('Users of ' ,  key ) .] ifFalse: [ key  :=  aSymbol  . label  := ('Senders of ' ,  key ) .]) .
+    ^ ( BrowserView  openListBrowserOn: ( self  allCallsOn:  aSymbol ) label: ( label  , ' from ' , ( self  name)) initialSelection: ( key  asSymbol keywords first)) .
+ ! 
+
+crossReference
+    ^ (( self  selectors asSortedCollection asArray) collect: [ :x |( Array  with: (( String  with: ( Character  cr)) ,  x ) with: ( self  whichSelectorsReferTo:  x )) .]) .
+ ! 
+
+showVariableMenu: generatorBlock collect: valueBlock 
+    | eachClass aStream lines count lastLine variables index |
+     aStream  := ( WriteStream  on: ( String  new: 200)) .
+     lines  := ( OrderedCollection  new) .
+     count  := 0 .
+     lastLine  := 0 .
+     variables  := ( OrderedCollection  new) .
+    (( self  withAllSuperclasses) reverseDo: [ :eachClass |(( count  =  lastLine ) ifFalse: [( lines  add:  count ) . lastLine  :=  count  .]) .(( generatorBlock  value:  eachClass ) do: [ :var |( aStream  nextPutAll: (( valueBlock  value:  var ) contractTo: 20) ;  variables ) .( variables  addLast:  var ) . count  := ( count  + 1) .]) .]) .
+    (( variables  isEmpty) ifTrue: [ ^  nil  .]) .
+    ( aStream  skip: -1) .
+     index  := (( PopUpMenu  labels: ( aStream  contents) lines:  lines ) startUp) .
+    ^ (( index  = 0) ifTrue: [ nil  .] ifFalse: [( variables  at:  index ) .]) .
+ ! !
+
+!Behavior methodsFor: 'fileIn/Out'!
+
+
+
+printMethodChunk: selector on: aFileStream moveSource: moveSource toFile: fileIndex 
+    | position |
+    ( aFileStream  cr ;  moveSource ) .
+    ( moveSource  ifTrue: [ position  := ( aFileStream  position) .]) .
+    ( aFileStream  nextChunkPut: (( self  sourceMethodAt:  selector ) asString)) .
+    ( moveSource  ifTrue: [(( self  compiledMethodAt:  selector ) setSourcePosition:  position  inFile:  fileIndex ) .]) .
+ ! !
+
+!Behavior methodsFor: 'private'!
+
+
+
+accumulateInstVarNames: names traversedClasses: classSet 
+    (( self  superclasses) do: [ :each |( each  accumulateInstVarNames:  names  traversedClasses:  classSet ) .]) .
+    (( classSet  includes:  self ) ifFalse: [( names  addAll: ( self  instVarNames)) .( classSet  add:  self ) .]) .
+ ! 
+
+checkMethodFor: selector 
+    | descr unmoved copyOK local copied conflict |
+     local  := ( methodDict  includesKey:  selector ) .
+     copied  := (( SelectorsOfCopiedMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) .
+     conflict  := (( SelectorsOfConflictMethods  at:  selector  ifAbsent: [( Array  new) .]) includes:  self ) .
+    (( local  & ( copied  not) & ( conflict  not)) ifTrue: [ ^  true  .]) .
+     descr  := ( self  superMethodDescriptionAt:  selector ) .
+    (( descr  isMethodNotImplemented) ifTrue: [( self  removeSelectorUnchecked:  selector ) . ^  true  .]) .
+    (( descr  isConflictingMethods) ifTrue: [( self  compileConflictCodeFor:  selector ) . ^  false  .]) .
+    ( conflict  ifTrue: [( self  removeSelectorUnchecked:  selector ) .( self  removeClass:  self  selector:  selector  in:  SelectorsOfConflictMethods ) .]) .
+    (( descr  = ( self  dynamicMethodDescriptionAt:  selector )) ifFalse: [ unmoved  := ( self  unmovedVarsFrom: ( descr  whichClass)) . copyOK  :=  true  .(( descr  method fieldsTouched) do: [ :field | copyOK  := ( copyOK  & ( unmoved  at:  field )) .]) .( copyOK  ifTrue: [( self  addSelectorUnchecked: ( descr  selector) withMethod: ( descr  method)) .] ifFalse: [( self  compileUnchecked: ( descr  sourceCode)) .]) .( self  insertClass:  self  selector:  selector  in:  SelectorsOfCopiedMethods ) .]) .
+    ^  true  .
+ ! 
+
+compileConflictCodeFor: selector 
+    | classes |
+     classes  := ( SelectorsOfConflictMethods  at:  selector  ifAbsent: [( Array  new) .]) .
+    (( classes  includes: ( self  name)) ifTrue: [ ^  self  .]) .
+    ( self  compile: ( self  conflictCodeFor:  selector ) classified: 'conflicting inherited methods' notifying:  nil ) .
+    ( self  insertClass:  self  selector:  selector  in:  SelectorsOfConflictMethods ) .
+ ! 
+
+compoundSelectorsMatching: simple 
+    ^ (( self  selectors) select: [ :sel |(( sel  isCompound) and: [(( sel  selectorPart) =  simple ) .]) .]) .
+ ! 
+
+conflictCodeFor: sel 
+    | code parser |
+     code  := (( self  dynamicMethodDescriptionAt:  sel ) sourceCode) .
+    (( self  parserClass new) parseSelector:  code ) .
+    ^ (( code  copyFrom: 1 to: (( parser  endOfLastToken) min: ( code  size))) , ( String  with: ( Character  cr)) , '	^self conflictingInheritanceError') .
+ ! 
+
+copyMethods
+    | noConflicts |
+     noConflicts  :=  true  .
+    (( self  allSelectors) do: [ :selector | noConflicts  := ( noConflicts  & ( self  checkMethodFor:  selector )) .]) .
+    ( noConflicts  ifFalse: [( Transcript  cr ;  show: (( self  name) , ' has conflicting inherited methods
+  -- consult browser for their names')) .]) .
+ ! 
+
+defaultSelectorForMethod: aMethod 
+    | aStream |
+     aStream  := ( WriteStream  on: ( String  new: 16)) .
+    ( aStream  nextPutAll: 'unboundMethod') .
+    (1 to: ( aMethod  numArgs) do: [ :i |( aStream  nextPutAll: 'with:') .]) .
+    ^ ( aStream  contents asSymbol) .
+ ! 
+
+flushCache
+    <primitive: 89>
+    ( self  primitiveFailed) .
+ ! 
+
+format: nInstVars variable: isVar words: isWords pointers: isPointers 
+     format  := ( nInstVars  + ( isVar  ifTrue: [4096 .] ifFalse: [0 .]) + ( isWords  ifTrue: [8192 .] ifFalse: [0 .]) + ( isPointers  ifTrue: [-16384 .] ifFalse: [0 .])) .
+ ! 
+
+insertClass: aClass selector: selector in: aDictionary 
+    | previous |
+     previous  := ( aDictionary  at:  selector  ifAbsent: [( Array  new) .]) .
+    (( previous  includes:  aClass ) ifFalse: [( aDictionary  at:  selector  put: ( previous  copyWith:  aClass )) .]) .
+ ! 
+
+printSubclassesOn: aStream callingSuperclass: whichSuper level: level 
+    | subs supers |
+    ( aStream  crtab:  level ) .
+    ( aStream  nextPutAll: ( self  name)) .
+    ( aStream  space ;  print: ( self  instVarNames)) .
+     supers  := ( self  superclasses) .
+    ((( supers  size) > 1) ifTrue: [( aStream  nextPutAll: '  [also a') .(( supers  copyWithout:  whichSuper ) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .
+     subs  := ( self  subclasses) .
+    (( self    Class ) ifTrue: [( aStream  crtab: ( level  + 1) ;  nextPutAll: '... all the Metaclasses ...') . subs  := ( subs  reject: [ :sub |( sub  isMeta) .]) .]) .
+    (( subs  asSortedCollection: [ :x :y |(( x  name) < ( y  name)) .]) do: [ :sub |( sub  printSubclassesOn:  aStream  callingSuperclass:  self  level: ( level  + 1)) .]) .
+ ! 
+
+removeClass: aClass selector: selector in: aDictionary 
+    | list |
+     list  := (( aDictionary  at:  selector ) copyWithout:  aClass ) .
+    ((( list  size) = 0) ifTrue: [( aDictionary  removeKey:  selector ) .] ifFalse: [( aDictionary  at:  selector  put:  list ) .]) .
+ ! 
+
+removeFromInheritanceTable: table 
+    | keys list |
+     keys  := ( table  keys) .
+    ( keys  do: [ :key | list  := (( table  at:  key ) copyWithout:  self ) .((( list  size) = 0) ifTrue: [( table  removeKey:  key ) .] ifFalse: [( table  at:  key  put:  list ) .]) .]) .
+ ! 
+
+removeFromInheritanceTables
+    ( self  removeFromInheritanceTable:  SelectorsOfConflictMethods ) .
+    ( self  removeFromInheritanceTable:  SelectorsOfCopiedMethods ) .
+    ( self  removeFromInheritanceTable:  SelectorsOfDirectedMethods ) .
+ ! 
+
+removeSelectorSimply: selector 
+    ( methodDict  removeKey:  selector  ifAbsent: [ ^  self  .]) .
+    ( self  flushCache) .
+ ! 
+
+sourceTextAt: selector 
+    | newSource method |
+     method  := ( methodDict  at:  selector ) .
+    (( Sensor  leftShiftDown) ifTrue: [ newSource  := (( self  decompilerClass new) decompile:  selector  in:  self  method:  method ) .] ifFalse: [ newSource  := ( method  getSource) .(( newSource    nil ) ifTrue: [ newSource  := (( self  decompilerClass new) decompile:  selector  in:  self  method:  method ) .]) .]) .
+    ^ ( newSource  asText) .
+ ! 
+
+unmovedVarsFrom: sup 
+    | allInstVarNames supNames |
+     allInstVarNames  := ( self  allInstVarNames) .
+     supNames  := ( sup  allInstVarNames) .
+    ^ ((1 to: ( sup  instSize)) collect: [ :i |(( supNames  at:  i ) = ( allInstVarNames  at:  i )) .]) .
+ ! 
+
+updateInheritanceTable: table oldSelf: oldSelf 
+    ( table  do: [ :array |(1 to: ( array  size) do: [ :i |((( array  at:  i )   oldSelf ) ifTrue: [( array  at:  i  put:  self ) .]) .]) .]) .
+ ! 
+
+updateInheritanceTables: oldSelf 
+    ( self  updateInheritanceTable:  SelectorsOfConflictMethods  oldSelf:  oldSelf ) .
+    ( self  updateInheritanceTable:  SelectorsOfCopiedMethods  oldSelf:  oldSelf ) .
+    ( self  updateInheritanceTable:  SelectorsOfDirectedMethods  oldSelf:  oldSelf ) .
+ ! !
+
+"= = = == = "!
+Behavior class instanceVariableNames: '' !
+!Behavior class methodsFor: 'initialization'!
+
+
+
+init
+     SelectorsOfConflictMethods  := ( IdentityDictionary  new) .
+     SelectorsOfCopiedMethods  := ( IdentityDictionary  new) .
+     SelectorsOfDirectedMethods  := ( IdentityDictionary  new) .
+ ! !
+

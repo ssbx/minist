@@ -6,7 +6,9 @@ PARSETESTFILES="
             tparse2.st \
             tparse3.st \
             tparse4.st \
-            tparseSqueakRectangle.st "
+            tparseSqueakRectangle.st \
+            tparseSt80Behavior.st \
+            tparseSt80Object.st "
 
 MINISTPROG=./minist-img-gen
 
