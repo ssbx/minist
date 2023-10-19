@@ -23,6 +23,14 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 17) return "pushTemp: 1";
     if (code == 18) return "pushTemp: 2";
     if (code == 19) return "pushTemp: 3";
+    if (code == 96) return "popAndStoreAt: 0";
+    if (code == 97) return "popAndStoreAt: 1";
+    if (code == 98) return "popAndStoreAt: 2";
+    if (code == 99) return "popAndStoreAt: 3";
+    if (code == 120) return "returnReceiver";
+    if (code == 121) return "returnTrue";
+    if (code == 122) return "returnFalse";
+    if (code == 123) return "returnNil";
     if (code == 176) return "send: +";
     if (code == 177) return "send: -";
     if (code == 178) return "send: <";
@@ -45,21 +53,17 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
 unsigned char bytecodes_getCodeFor(int type, int val) {
     switch (type) {
         case PUSH_RCVR:
+            /* 0 - 15 */
             assert(val < 16);
             return val;
-        case SEND_BIN_MSG:
-            if (val == '+') return 176;
-            if (val == '-') return 177;
-            if (val == '<') return 178;
-            if (val == '>') return 178;
-            if (val == LESS_OR_EQUAL) return 180;
-            if (val == GREATER_OR_EQUAL) return 181;
-            if (val == '=') return 182;
-            if (val == NOT_EQUAL) return 183;
-            if (val == '*') return 184;
-            if (val == '/') return 185;
-            if (val == MODULO) return 186;
-            break;
+        case PUSH_TEMP:
+            /* 16 - 31 */
+            assert(val < 16);
+            return 16 + val;
+        case POP_STORE_RCVR:
+            /* 96 - 103 */
+            assert(val < 7);
+            return 96 + val;
         case PUSH_CONSTANT:
             /*
              * TODO
@@ -73,9 +77,19 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             if (val == 1) return 118;
             if (val == 2) return 119;
             break;
-        case PUSH_TEMP:
-            assert(val < 16);
-            return val + 16;
+
+        case SEND_BIN_MSG:
+            if (val == '+') return 176;
+            if (val == '-') return 177;
+            if (val == '<') return 178;
+            if (val == '>') return 178;
+            if (val == LESS_OR_EQUAL) return 180;
+            if (val == GREATER_OR_EQUAL) return 181;
+            if (val == '=') return 182;
+            if (val == NOT_EQUAL) return 183;
+            if (val == '*') return 184;
+            if (val == '/') return 185;
+            if (val == MODULO) return 186;
             break;
     }
     return 0;

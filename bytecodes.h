@@ -11,6 +11,8 @@ enum {
 enum {
     PUSH_RCVR,
     PUSH_TEMP,
+    POP_STORE_RCVR,
+    POP_STORE_TEMP,
     PUSH_CONSTANT,
     SEND_BIN_MSG
 };

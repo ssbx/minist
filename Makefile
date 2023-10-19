@@ -36,7 +36,7 @@ include depends.mk
 all:: run
 
 run: minist-img-gen
-	./minist-img-gen -p files/Test.st
+	./minist-img-gen files/Test.st
 
 clean:
 	$(RM) minist-img-gen *.o parse.tab.* scan.yy.*

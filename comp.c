@@ -14,7 +14,15 @@ struct MethodCompileInfo {
     char **instvars;
     int    numInstVars;
 };
-
+enum {
+    VALIS_NOTFOUND,
+    VALIS_RCVR,
+    VALIS_TEMP
+};
+struct Val {
+    int type;
+    int index;
+};
 static int  getTemps(struct Method*, char***);
 static int  getInstvars(struct ClassHeader*, char ***);
 static void decodeExpr(struct Method*, struct ExprUnit* e, struct MethodCompileInfo info);
@@ -63,8 +71,37 @@ static void compileMethod(
         decodeExpr(method, expr, info);
         expr = expr->next;
     }
+    /* if no return, add bytecode 120 */
+    expr = method->exprs;
+    while (expr->next) expr = expr->next;
+    if (!expr->returns) {
+        addByteToMethod(120, method);
+    }
 }
 
+struct Val
+getVal(char* varname, struct MethodCompileInfo info) {
+    struct Val p;
+    p.type = VALIS_NOTFOUND;
+    p.index = 0;
+    for (int i = 0; i < info.numTemps; i++) {
+        if (strcmp(varname, info.temps[i]) == 0) {
+            p.index = i;
+            p.type = VALIS_TEMP;
+            return p;
+        }
+    }
+
+    for (int i = 0; i < info.numInstVars; i++) {
+        if (strcmp(varname, info.instvars[i]) == 0) {
+            p.index = i;
+            p.type = VALIS_RCVR;
+            return p;
+        }
+    }
+
+    return p;
+}
 
 static void decodeExpr(
         struct Method           *method,
@@ -72,31 +109,28 @@ static void decodeExpr(
         struct MethodCompileInfo info)
 {
     struct BinaryMsg *binmsg;
+    struct Val val;
     unsigned char code;
     switch (expr->type) {
         case ST_ID:
-            for (int i = 0; i < info.numTemps; i++) {
-                if (strcmp(expr->u.id.name, info.temps[i]) == 0) {
-                    code = bytecodes_getCodeFor(PUSH_TEMP, i);
-                    addByteToMethod(code, method);
-                    return;
-                }
+            val = getVal(expr->u.id.name, info);
+            if (val.type == VALIS_NOTFOUND) {
+                fprintf(stderr, "can not find %s\n", expr->u.id.name);
+                exit(1);
+            } else if (val.type == VALIS_TEMP) {
+                code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
+                addByteToMethod(code, method);
+            } else {
+                code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
+                addByteToMethod(code, method);
             }
-            for (int i = 0; i < info.numInstVars; i++) {
-                if (strcmp(expr->u.id.name, info.instvars[i]) == 0) {
-                    code = bytecodes_getCodeFor(PUSH_RCVR, i);
-                    addByteToMethod(code, method);
-                    return;
-                }
-            }
-            printf("%s %s %i error\n", expr->u.id.name,__FILE__, __LINE__);
-            exit(2);
+
             break;
         case ST_INT:
-            printf("wtf pushConstant: %s\n", expr->u.integer.value);
+            code = bytecodes_getCodeFor(PUSH_CONSTANT, atoi(expr->u.string.value));
+            addByteToMethod(code, method);
             break;
         case ST_CHAR:
-            /* WTF */
             code = bytecodes_getCodeFor(PUSH_CONSTANT, atoi(expr->u.string.value));
             addByteToMethod(code, method);
             break;
@@ -112,6 +146,23 @@ static void decodeExpr(
             }
             break;
     }
+
+    if (expr->assignsTo) {
+        struct ExprUnit *e = expr->assignsTo;
+        val = getVal(e->u.id.name, info);
+        if (val.type == VALIS_NOTFOUND) {
+            fprintf(stderr, "can not find %s\n", expr->u.id.name);
+            exit(1);
+        }
+        if (val.type == VALIS_TEMP) {
+            code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
+            addByteToMethod(code, method);
+        } else {
+            code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
+            addByteToMethod(code, method);
+        }
+    }
+
     if (expr->returns) addByteToMethod(124, method);
 }
 

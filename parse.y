@@ -456,7 +456,7 @@ mkSymbolExpr(char*v)
 struct ExprUnit*
 mkIntExpr(char*v)
 {
-    struct ExprUnit *t = allocExprUnit(ST_CHAR);
+    struct ExprUnit *t = allocExprUnit(ST_INT);
     t->u.integer.value = v;
     return t;
 }
