@@ -1,0 +1,110 @@
+have assignsTo 1
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
++ anInteger
+    "
+    <0> pushRcvr: 0
+    <16> pushTemp: 0
+    <176> send: +
+    <124> returnTop
+    "
+    ^ ( origin  +  anInteger ) .
+ ! 
+
++ anInteger2
+    "
+    <0> pushRcvr: 0
+    <124> returnTop
+    "
+    ^  origin  .
+ ! 
+
++ anInteger3
+    "
+    <16> pushTemp: 0
+    <124> returnTop
+    "
+    ^  anInteger3  .
+ ! 
+
+mult: x by: y and: z 
+    "
+    <16> pushTemp: 0
+    <17> pushTemp: 1
+    <184> send: *
+    <18> pushTemp: 2
+    <184> send: *
+    <124> returnTop
+    "
+    ^ ( x  *  y  *  z ) .
+ ! 
+
+unarytest
+    "
+    <124> returnTop
+    "
+    ^ ( origin  msg) .
+ ! 
+
+center
+    "
+    <0> pushRcvr: 0
+    <1> pushRcvr: 1
+    <176> send: +
+    <119> pushConstant: 2
+    <185> send: /
+    <124> returnTop
+    "
+    ^ ( origin  +  corner  /  2 ) .
+ ! 
+
+extent: newExtent 
+    "
+    <0> pushRcvr: 0
+    <16> pushTemp: 0
+    <176> send: +
+    <97> popAndStoreRcvr: 1
+    <120> returnReceiver
+    "
+     corner  := ( origin  +  newExtent ) .
+ ! 
+
+extent: newExtent 
+    "
+    <0> pushRcvr: 0
+    <16> pushTemp: 0
+    <176> send: +
+    <96> popAndStoreRcvr: 0
+    <120> returnReceiver
+    "
+     origin  := ( origin  +  newExtent ) .
+ ! 
+
++ anInteger4
+    "
+    <0> pushRcvr: 0
+    <17> pushTemp: 1
+    <184> send: *
+    <18> pushTemp: 2
+    <184> send: *
+    <16> pushTemp: 0
+    <184> send: *
+    <105> popAndStoreTemp: 1
+    <120> returnReceiver
+    "
+    | tmpx tmpy |
+     tmpx  := ( origin  *  tmpx  *  tmpy  *  anInteger4 ) .
+ ! !
+
+

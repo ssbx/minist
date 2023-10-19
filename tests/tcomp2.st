@@ -25,12 +25,13 @@ unarytest
     ^ origin msg !
 
 center
-    " page 543 "
     ^ origin + corner / 2 !
 
 extent: newExtent
-    " page 544 "
     corner := origin + newExtent !
+
+extent: newExtent
+    origin := origin + newExtent !
 
 + anInteger4
     | tmpx tmpy |

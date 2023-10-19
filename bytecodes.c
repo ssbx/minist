@@ -23,10 +23,16 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 17) return "pushTemp: 1";
     if (code == 18) return "pushTemp: 2";
     if (code == 19) return "pushTemp: 3";
-    if (code == 96) return "popAndStoreAt: 0";
-    if (code == 97) return "popAndStoreAt: 1";
-    if (code == 98) return "popAndStoreAt: 2";
-    if (code == 99) return "popAndStoreAt: 3";
+    if (code == 96) return "popAndStoreRcvr: 0";
+    if (code == 97) return "popAndStoreRcvr: 1";
+    if (code == 98) return "popAndStoreRcvr: 2";
+    if (code == 99) return "popAndStoreRcvr: 3";
+    if (code == 104) return "popAndStoreTemp: 0";
+    if (code == 105) return "popAndStoreTemp: 1";
+    if (code == 105) return "popAndStoreTemp: 2";
+    if (code == 107) return "popAndStoreTemp: 3";
+    if (code == 108) return "popAndStoreTemp: 4";
+    if (code == 109) return "popAndStoreTemp: 5";
     if (code == 120) return "returnReceiver";
     if (code == 121) return "returnTrue";
     if (code == 122) return "returnFalse";
@@ -64,6 +70,10 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             /* 96 - 103 */
             assert(val < 7);
             return 96 + val;
+        case POP_STORE_TEMP:
+            /* 104 - 111 */
+            assert(val < 7);
+            return 104 + val;
         case PUSH_CONSTANT:
             /*
              * TODO

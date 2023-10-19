@@ -1,6 +1,7 @@
 #!/bin/sh
 
-COMPTESTFILES=" tcomp1.st "
+COMPTESTFILES=" tcomp1.st \
+                tcomp2.st "
 PARSETESTFILES="
             tparse1.st \
             tparse2.st \

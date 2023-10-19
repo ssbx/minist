@@ -155,6 +155,7 @@ static void decodeExpr(
             exit(1);
         }
         if (val.type == VALIS_TEMP) {
+            printf("have assignsTo %i\n", val.index);
             code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
             addByteToMethod(code, method);
         } else {
