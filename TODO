@@ -1,3 +1,5 @@
+Nettoyer, le bytecode doit aller dans comp.c
+
 - completer le bytecode compiler
 - créer un object memory de base
 - créer un interp et tester

@@ -2,6 +2,75 @@
 #include "parse.tab.h"
 #include <assert.h>
 
+unsigned char bytecodes_getCodeFor(int type, int val) {
+    switch (type) {
+        case PUSH_RCVR:
+            /* 0 - 15 */
+            assert(val < 16);
+            return val;
+        case PUSH_TEMP:
+            /* 16 - 31 */
+            assert(val < 16);
+            return 16 + val;
+        case PUSH_LITERAL_CONSTANT:
+            /* 32 - 63 TODO */
+            break;
+        case PUSH_LITERAL_VARIABLE:
+            /* 64 - 95 TODO */
+            break;
+        case POP_STORE_RCVR:
+            /* 96 - 103 */
+            assert(val < 7);
+            return 96 + val;
+        case POP_STORE_TEMP:
+            /* 104 - 111 */
+            assert(val < 7);
+            return 104 + val;
+        case PUSH_CONSTANT:
+            /* 112 - 119 TODO */
+            /*
+            if (val == RECEIVER ) return 112;
+            if (val == ST_TRUE) return 113;
+            if (val == ST_FALSE) return 114;
+            if (val == ST_NIL) return 115;
+             */
+            if (val == -1) return 116;
+            if (val == 0) return 117;
+            if (val == 1) return 118;
+            if (val == 2) return 119;
+            break;
+        case RETURN_CONSTANT:
+            /* 120 - 123 TODO */
+            break;
+        case RETURN_STACK_TOP_FROM:
+            /* 124 - 125 TODO */
+            break;
+        case SEND_BIN_MSG:
+            /* 176 - 191 */
+            if (val == '+') return 176;
+            if (val == '-') return 177;
+            if (val == '<') return 178;
+            if (val == '>') return 179;
+            if (val == LESS_OR_EQUAL) return 180;
+            if (val == GREATER_OR_EQUAL) return 181;
+            if (val == '=') return 182;
+            if (val == NOT_EQUAL) return 183;
+            if (val == '*') return 184;
+            if (val == '/') return 185;
+            if (val == MODULO) return 186;
+            /*
+            if (val == ) return 187; /makepoint
+            if (val == ) return 188; /bitshift
+            if (val == ) return 189; /div
+            if (val == ) return 190; /bitand
+            if (val == ) return 191; /bitor
+            */
+            break;
+    }
+    return 138; // unused
+}
+
+
 const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 0) return "pushRcvr: 0";
     if (code == 1) return "pushRcvr: 1";
@@ -53,55 +122,8 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 118) return "pushConstant: 1";
     if (code == 119) return "pushConstant: 2";
     if (code == 124) return "returnTop";
+    if (code == 138) return "!wrong bytecode";
     return "unknwon bytecode";
 }
 
-unsigned char bytecodes_getCodeFor(int type, int val) {
-    switch (type) {
-        case PUSH_RCVR:
-            /* 0 - 15 */
-            assert(val < 16);
-            return val;
-        case PUSH_TEMP:
-            /* 16 - 31 */
-            assert(val < 16);
-            return 16 + val;
-        case POP_STORE_RCVR:
-            /* 96 - 103 */
-            assert(val < 7);
-            return 96 + val;
-        case POP_STORE_TEMP:
-            /* 104 - 111 */
-            assert(val < 7);
-            return 104 + val;
-        case PUSH_CONSTANT:
-            /*
-             * TODO
-            if (val == RECEIVE ) return 112;
-            if (val == ST_TRUE) return 113;
-            if (val == ST_FALSE) return 114;
-            if (val == ST_NIL) return 115;
-             */
-            if (val == -1) return 116;
-            if (val == 0) return 117;
-            if (val == 1) return 118;
-            if (val == 2) return 119;
-            break;
-
-        case SEND_BIN_MSG:
-            if (val == '+') return 176;
-            if (val == '-') return 177;
-            if (val == '<') return 178;
-            if (val == '>') return 178;
-            if (val == LESS_OR_EQUAL) return 180;
-            if (val == GREATER_OR_EQUAL) return 181;
-            if (val == '=') return 182;
-            if (val == NOT_EQUAL) return 183;
-            if (val == '*') return 184;
-            if (val == '/') return 185;
-            if (val == MODULO) return 186;
-            break;
-    }
-    return 0;
-}
 
