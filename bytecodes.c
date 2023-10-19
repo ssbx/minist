@@ -29,7 +29,7 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 99) return "popAndStoreRcvr: 3";
     if (code == 104) return "popAndStoreTemp: 0";
     if (code == 105) return "popAndStoreTemp: 1";
-    if (code == 105) return "popAndStoreTemp: 2";
+    if (code == 106) return "popAndStoreTemp: 2";
     if (code == 107) return "popAndStoreTemp: 3";
     if (code == 108) return "popAndStoreTemp: 4";
     if (code == 109) return "popAndStoreTemp: 5";

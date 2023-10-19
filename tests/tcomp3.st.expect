@@ -1,0 +1,34 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+at: y 
+    "
+    <16> pushTemp: 0
+    <119> pushConstant: 2
+    <184> send: *
+    <119> pushConstant: 2
+    <176> send: +
+    <106> popAndStoreTemp: 2
+    <18> pushTemp: 2
+    <105> popAndStoreTemp: 1
+    <17> pushTemp: 1
+    <96> popAndStoreRcvr: 0
+    <0> pushRcvr: 0
+    <97> popAndStoreRcvr: 1
+    <120> returnReceiver
+    "
+    | a b |
+     b  :=  a  :=  origin  :=  corner  := ( y  *  2  +  2 ) .
+ ! !
+
+

@@ -149,18 +149,26 @@ static void decodeExpr(
 
     if (expr->assignsTo) {
         struct ExprUnit *e = expr->assignsTo;
-        val = getVal(e->u.id.name, info);
-        if (val.type == VALIS_NOTFOUND) {
-            fprintf(stderr, "can not find %s\n", expr->u.id.name);
-            exit(1);
-        }
-        if (val.type == VALIS_TEMP) {
-            printf("have assignsTo %i\n", val.index);
-            code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
-            addByteToMethod(code, method);
-        } else {
-            code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
-            addByteToMethod(code, method);
+        while (e) {
+            val = getVal(e->u.id.name, info);
+            if (val.type == VALIS_NOTFOUND) {
+                fprintf(stderr, "can not find %s\n", expr->u.id.name);
+                exit(1);
+            }
+            if (val.type == VALIS_TEMP) {
+                code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
+                addByteToMethod(code, method);
+                // if e->next
+                code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
+            } else { // VALIS_RCVR
+                code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
+                addByteToMethod(code, method);
+                // if e->next
+                code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
+            }
+            if (e->next)
+                addByteToMethod(code, method);
+            e = e->next;
         }
     }
 

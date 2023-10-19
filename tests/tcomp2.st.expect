@@ -1,4 +1,3 @@
-have assignsTo 1
 -----
 Object subclass: #Rectangle
 	instanceVariableNames: ' origin  corner '
