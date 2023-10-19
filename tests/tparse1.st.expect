@@ -37,10 +37,10 @@ othertest
  ! 
 
 cascade
-    ( a  b c ;  b  ;  d  ;  c  ;  +  y  ;  at:  x  put:  this ) .
+    ( a  b c ;  y  ;  y  ;  y  ;  +  y  ;  at:  x  put:  this ) .
     ( a  +  b  ;  -  c ) .
     ( a  +  b  +  c  ;  -  c ) .
-    ( y  at:  x  put:  y  ;  f  ;  a  ;  +  x  ;  at:  x  put:  y  and:  z ) .
+    ( y  at:  x  put:  y  ;  x  ;  x  ;  +  x  ;  at:  x  put:  y  and:  z ) .
     ( a  +  b ) .
  ! 
 
@@ -61,7 +61,7 @@ test: a put: b
 
 blocks
      a  := [(( a  b) +  c ) .] .
-     a  := ([(( a  b) +  c ) .] value:  x  ;  value  ;  +  x ) .
+     a  := ([(( a  b) +  c ) .] value:  x  ;  x  ;  +  x ) .
      a  := ([ |  a  b  c  | (( a  b) +  c ) .] +  y ) .
     ^ [((( a  b c) +  d ) at:  x  put:  y ) .( a  b c) .] .
  ! 

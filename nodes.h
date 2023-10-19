@@ -132,8 +132,8 @@ struct MethodDef {
  *  | var1 var2 var3 |
  */
 struct Temp {
-    struct Temp     *next;
-    struct ExprUnit *name; // XXX should be simple *char
+    char        *name;
+    struct Temp *next;
 };
 
 
@@ -235,24 +235,19 @@ enum {
     CASCADE_BINARY,
     CASCADE_KEYWORD,
 };
-
+union CascadeType {
+    char              *unary;
+    struct BinaryMsg  *binary;
+    struct KeywordMsg *keyword;
+};
 struct Cascade {
     int type;
-    union {
-        struct ExprUnit* msg;
-    } unary;
-    union {
-        struct BinaryMsg *msg;
-    } binary;
-    union {
-        struct KeywordMsg *msg;
-    } keyword;
+    union  CascadeType u;
     struct Cascade *next;
 };
 
 
 /*
- * Block arguments. XXX Might share something with struct Temp?
  * [ :arg1 :arg2 | body... ]
  */
 struct BlockArg {

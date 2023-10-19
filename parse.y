@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "nodes.h"
+
 extern int yylineno;
 int  yylex();
 void yyerror(const char *s); /* defined in main.c */
@@ -14,12 +15,13 @@ extern char* st_string;
 extern int st_op;
 extern char *fname;
 
-char *myStrdup(char *str) {
+char *strdup2(const char *str) {
     size_t len = strlen(str) + 1;
     char  *new = malloc(len);
     memcpy(new, str, len);
     return new;
 }
+
 struct ClassFile* parsed_file = NULL;
 
 void freeExprUnit(struct ExprUnit *expr);
@@ -163,9 +165,11 @@ categories: category
 
 category: '!' id keysel string '!' methods '!' {
                 checkStr($3, "methodsFor:");
+                free($3);
                 $$ = mkMethodCategory($2, $4, $6); }
         | '!' id keysel string '!' '!' {
                 checkStr($3, "methodsFor:");
+                free($3);
                 $$ = mkMethodCategory($2, $4, NULL); }
 
 /******************************************************************************
@@ -173,9 +177,8 @@ category: '!' id keysel string '!' methods '!' {
  *****************************************************************************/
 clsclsheader: id id keysel string '!' {
         checkStr($3,"instanceVariableNames:");
-        assert($2->type == ST_ID);
-        checkStr($2->u.id.name, "class");
         free($3);
+        checkStr($2->u.id.name, "class");
         freeExprUnit($2);
         $$ = mkClassClassHeader($1, $4);}
 
@@ -334,13 +337,13 @@ unit: id | literals | block | '(' expr ')' { $$ = $2;}
 
 literals: integer | string | charconst | symconst | arrayconst
 
-integer:   INTEGER    { $$ = mkIntExpr(myStrdup(yytext)); }
+integer:   INTEGER    { $$ = mkIntExpr(strdup2(yytext)); }
 string:    STRING     { $$ = mkStringExpr(st_string); }
-charconst: CHARCONST  { $$ = mkCharExpr(myStrdup(yytext)); }
-symconst:  SYMCONST   { $$ = mkSymbolExpr(myStrdup(yytext)); }
-id:        IDENTIFIER { $$ = mkIdExpr(myStrdup(yytext)); }
-keysel:    KEYWORD    { $$ = myStrdup(yytext); }
-colonvar:  COLONVAR   { $$ = myStrdup(yytext); }
+charconst: CHARCONST  { $$ = mkCharExpr(strdup2(yytext)); }
+symconst:  SYMCONST   { $$ = mkSymbolExpr(strdup2(yytext)); }
+id:        IDENTIFIER { $$ = mkIdExpr(strdup2(yytext)); }
+keysel:    KEYWORD    { $$ = strdup2(yytext); }
+colonvar:  COLONVAR   { $$ = strdup2(yytext); }
 
 binsel: binops { $$ = st_op; };
 binops: ',' | '-' | '*' | '/' | '<' | LESS_OR_EQUAL | '>' |
@@ -513,7 +516,7 @@ addKeywordCascade(
     struct Cascade *t = malloc(sizeof(struct Cascade));
     t->type = CASCADE_KEYWORD;
     t->next = NULL;
-    t->keyword.msg = m;
+    t->u.keyword = m;
     if (!e->cascade)
         e->cascade = t;
     else {
@@ -531,7 +534,7 @@ addBinaryCascade(
     struct Cascade *t = malloc(sizeof(struct Cascade));
     t->type = CASCADE_BINARY;
     t->next = NULL;
-    t->binary.msg = bin;
+    t->u.binary = bin;
     if (!ev->cascade)
         ev->cascade = t;
     else {
@@ -549,7 +552,9 @@ addUnaryCascade(
     struct Cascade *t = malloc(sizeof(struct Cascade));
     t->type = CASCADE_UNARY;
     t->next = NULL;
-    t->unary.msg = unary;
+    assert(unary->type == ST_ID);
+    t->u.unary = unary->u.id.name;
+    freeExprUnit(unary);
     if (! ev->cascade)
         ev->cascade = t;
     else {
@@ -593,7 +598,9 @@ mkTemp(struct ExprUnit *v)
 {
     struct Temp *t = malloc(sizeof(struct Temp));
     t->next = NULL;
-    t->name = v;
+    assert(v->type == ST_ID);
+    t->name = strdup2(v->u.id.name);
+    freeExprUnit(v);
     return t;
 }
 
@@ -636,7 +643,7 @@ mkUnaryMethodDef(struct ExprUnit* msg)
     struct MethodDef *d = malloc(sizeof(struct MethodDef));
     d->type = ST_UNARY;
     assert(msg->type == ST_ID);
-    d->u.unary.name = myStrdup(msg->u.id.name);
+    d->u.unary.name = strdup2(msg->u.id.name);
     freeExprUnit(msg);
     return d;
 }
@@ -650,7 +657,7 @@ mkBinaryMethodDef(
     d->type = ST_BINARY;
     d->u.binary.op = c;
     assert(arg->type == ST_ID);
-    d->u.binary.arg = myStrdup(arg->u.id.name);
+    d->u.binary.arg = strdup2(arg->u.id.name);
     freeExprUnit(arg);
     return d;
 }
@@ -674,7 +681,7 @@ mkMethodCategory(
     c->classname = classname; /* XX todo extract str */
 
     assert(category->type == ST_STRING);
-    c->name = myStrdup(category->u.string.value);
+    c->name = strdup2(category->u.string.value);
     freeExprUnit(category);
 
     c->methods = methods;
@@ -733,7 +740,7 @@ int tokenizeStString(char *str, char ***dst)
             tokens = realloc(tokens, sizeof(char*) + 10);
             tsize += 10;
         }
-        tokens[tnum++] = myStrdup(tok);
+        tokens[tnum++] = strdup2(tok);
         tok = strtok(NULL, " ");
     }
     *dst = tokens;
@@ -753,11 +760,11 @@ mkClassHeader(
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
 
     assert((super->type    == ST_ID) && (!super->next));
-    h->super = myStrdup(super->u.id.name);
+    h->super = strdup2(super->u.id.name);
     freeExprUnit(super);
 
     assert(classname->type == ST_SYMBOL);
-    h->className = myStrdup(classname->u.symbol.value);
+    h->className = strdup2(classname->u.symbol.value);
     freeExprUnit(classname);
 
     assert(instvars->type  == ST_STRING);
@@ -773,7 +780,7 @@ mkClassHeader(
     freeExprUnit(pooldict);
 
     assert(category->type  == ST_STRING);
-    h->category = myStrdup(category->u.string.value);
+    h->category = strdup2(category->u.string.value);
     freeExprUnit(category);
     return h;
 }
@@ -786,11 +793,11 @@ mkComment(
     struct ClassComment *c = malloc(sizeof(struct ClassComment));
 
     assert(className->type == ST_ID);
-    c->className = myStrdup(className->u.id.name);
+    c->className = strdup2(className->u.id.name);
     freeExprUnit(className);
 
     assert(comment->type == ST_STRING);
-    c->str = myStrdup(comment->u.string.value);
+    c->str = strdup2(comment->u.string.value);
     freeExprUnit(comment);
     return c;
 }
@@ -822,7 +829,7 @@ mkClassClassHeader(
 {
     struct ClassClassHeader *c = malloc(sizeof(struct ClassClassHeader));
     assert(name->type == ST_ID);
-    c->className = myStrdup(name->u.id.name);
+    c->className = strdup2(name->u.id.name);
     freeExprUnit(name);
 
     assert(instvars->type == ST_STRING);

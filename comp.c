@@ -89,7 +89,8 @@ static void decodeExpr(
                     return;
                 }
             }
-            printf("%s %i error\n", __FILE__, __LINE__);
+            printf("%s %s %i error\n", expr->u.id.name,__FILE__, __LINE__);
+            exit(2);
             break;
         case ST_INT:
             printf("wtf pushConstant: %s\n", expr->u.integer.value);
@@ -153,7 +154,7 @@ static int getTemps(struct Method* m, char*** dest) {
     if (m->temps) {
         struct Temp *t = m->temps;
         while (t) {
-            temps[tmpid++] = t->name->u.id.name;
+            temps[tmpid++] = t->name;
             t = t->next;
         }
     }

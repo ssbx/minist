@@ -1,3 +1,5 @@
+all::
+
 .POSIX:
 .SUFFIXES: .c .o
 
@@ -30,7 +32,9 @@ scan.yy.c scan.yy.h: scan.l parse.tab.h
 
 include depends.mk
 
-.PHONY: run clean depends check
+.PHONY: run clean depends check all
+all:: run
+
 run: minist-img-gen
 	./minist-img-gen files/Test.st
 

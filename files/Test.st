@@ -27,6 +27,12 @@ center: b
 at: x put: y
     | z |
     ^ x * (y * z) !
+
+testunary
+    ^ a corner !
+
+cascade
+    ^ a b c d !
 !
 "========================" !
 

@@ -31,15 +31,15 @@ static void print_cas(struct Cascade *c) {
     struct KeywordMsg *k;
     switch (c->type) {
         case CASCADE_UNARY:
-            print_eval(c->unary.msg);
+            printf(" %s ", c->u.unary);
             break;
         case CASCADE_BINARY:
-            b = c->binary.msg;
+            b = c->u.binary;
             printf( " %c ", b->op);
             print_eval(b->arg);
             break;
         case CASCADE_KEYWORD:
-            k = c->keyword.msg;
+            k = c->u.keyword;
             while(k) {
                 printf( " %s ", k->key);
                 print_eval(k->arg);
@@ -136,7 +136,7 @@ static void print_eval(struct ExprUnit *e) {
                 printf( " | ");
                 tps = e->u.block.temps;
                 while(tps) {
-                    print_eval(tps->name);
+                    printf(" %s ", tps->name);
                     tps = tps->next;
                 }
                 printf( " | ");
@@ -212,7 +212,7 @@ static void print_method(struct Method* m) {
         struct Temp *t = m->temps;
         printf("    |");
         while(t) {
-            printf( " %s", t->name->u.id.name);
+            printf( " %s", t->name);
             t = t->next;
         }
         printf(" |\n");
