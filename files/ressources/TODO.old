@@ -1,0 +1,343 @@
+? pourquoi un processus par défaut qui fait rien: [ [true] whileTrue: [] ] ?
+
+# HACK
+
+Je commence à comprendre le bazard, hacker pour utiliser les classes
+gnu-smalltalk + repl plutot que perdre du temps sur l'image xerox.
+
+## Dans minist/tools/bootstrap:
+- parser les fichiers .st pour finir avec une arboressence de classes
+- compiler les methodes petit à petit,
+- créer une fonction dans ObjectMemory qui "bytecodeOut" le bytecode
+des methodes, et lex extraire dans des fichiers Class.st:selector
+- tester jusqu'a avoir les mêmes bytecodes coté bootstrapper et ObjectMemory.
+
+## Quand je suis OK
+- Utiliser ObjectMemory pour créer une nouvelle image
+- Dans la nouvelle image, non initialisée, le scheduler pointe vers une
+fonction qui initialize:
+    . tous les Symbols dans SysemDictionary,
+    . tous les Class initialize trouvés en bas des fichiers Class.st
+
+## Et voir si ça mouline
+
+# REPL
+
+- Utiliser stdin/stdout/stderr pour faire fonctionner la machine
+ouvrir stdin depuis la machine et faire "printIt" (voir le code du Transcript)
+et retourner le resultat vers stdout, les erreurs vers stderr. Utiliser
+epoll(7) sur stdin. Voir ou mettre les var staiques stdin/stderr/stdout chez
+java par ex.
+
+- Problème, je peux plus éditer l'image ensuite. Voir comment le faire avec
+des simples appels aux objets (en ligne de commande quoi).
+
+# BOOTSTRAP
+
+D'abord avoir un REPL simple .
+
+!! - Voir gnu-smalltalk/libgst/files.c:513 (complexe)
+!! - Voir littlesmalltalk: lst1 inclue dans le parser les bytecodes pour les
+!!   classes "mères"
+!! - Voir littlesmalltalk: lst3 ... comment ils font
+!! - Voir src/bootstraper ou ça commencera
+
+Soit:
+- un fileOut special qui inclue le bytecode pour les classes qui crée les
+CompiledMethods.
+- un parser qui lise et compile des fichiers de classes smalltalk (voir
+les parsers little smalltalk).
+
+Ou dans l'ordre:
+    - pour chaque fichier classe
+        . scan
+        . parse
+        . compile les methodes
+        . créer un objet valide pour ObjectMemory
+    - création de la memoire (ObjectMemory vide)
+    - création minimale des objets connus dans la memoire,
+      voir doc/bootstraper/lst5_ImageBuilder/imageBuilder.c:bigBang
+
+# EDITEUR
+
+Utiliser le REPL avec une extention Emacs retrouver une interface identique
+au browser Smalltalk.
+
+# IDLE
+
+?? - impossible de determiner les procs qui moulinent, des qu'on modifie le
+     workspace, ils changent. Lié aux Controlers mal foutus.
+?? - primitiveMousePt est aussi vachement appelée.
+
+Repl d'abord, ça sera plus simple, l ui créée des procs en pagaille.
+Les Process (Link) appartienent soit au ProcessScheduler, soit à un Semaphore.
+Donc c'est quoi qui mouline quand tout et en "wait"?
+Voir primitiveSnapshot ce qui est mis dans le ActiveProcess du Processor pour
+le démarage. On s'approche.
+
+Voir primitiveInputSemaphore voir si c est l un des procs qui mouline pour
+rien.
+
+Un qui mouline pour rien, primitiveMousePoint, ou voir ScheduledController.
+!! voir SystemDictionary(snapshot/install), c'est ici que le processus de
+!! démarage s execute
+!! voir Object asOop pour savoir quel process mouline
+
+- Commandes debug pour afficher l'état de la VM sans la modifier avec des
+commandes lues sur STDIN. Utiliser les touches F1-12 pour faire ça par ex:
+    . F1 stopper/restorer les evenements Input (pour mettre la machine dans un
+      état connus)
+    . F2 stopper/restorer les evenements Timeout,
+    . F3 pretty print ProcessScheduler, semaphoreIndex, semaphoreList,
+      curr$ntProc, nextProc, procsWaiting:
+        . tous les processus, leur priorités, leur sémaphore,
+        . toutes les semaphores et leurs procs,
+        . les processus qui sont en "wait" dans un Semaphore,
+        . les processus qui ne sont dans aucun Semaphore (actifs),
+    . F4 comme F3 mais à chaque changement d'état,
+    . F5 emmetre un évènement Timeout.
+    . F6 pretty print de la stack (au besoin plus tard)
+
+- Detecter l'état ou tous les procs sont en "wait" et ne pas "resume", mais
+implementer un état de la VM "idle" ou elle attend des user ou system events
+(timer, stdin/file readable,...).
+- Tester faire dormir le bazard quand pas d'évenement SDL n'apparait et que
+tous les le "Process" sont en "wait" n'a rien à mouliner.
+
+!!!! VOIR "ressources idle" plus bas. !!!
+
+
+# EDITEUR
+- garder le fonctionnement de l'image avec SDL pour pouvoir modifier quand même
+le code et l'image.
+
+# on netoie
+- renommer les fonctio,s qui influe sur les structures: reg, procReg, classReg,
+pour les identifier facilement.
+- trouver un nom sympa (minist/microst)
+
+ET VOILA!
+
+
+# VM/AUTRES
+
+Au choix:
+- Thread pool: au démarage la vm crée n threads (ou n = nombre de ceurs), et
+schedule les Process sur eux. Un truc a la Erlang ou c'est la vm qui switch les
+contextes quoi. Du coup ça necessite une modification du comportement de la
+classe Semaphore coté vm (et coté image aussi?). Voir "ressources multi threading
+plus bas".
+
+- Foreign interface: Nouvelle primitive FFI avec tous les arguments qu'il faut
+pour appeler une fonction écrite en C et loaded quelque pars (example xlib pour
+créer une lib widget, on peut imaginer le bazard marcher sur window et android
+par example aussi)
+
+- Image bootstrap: trouver un système pour créer depuis rien une image propre:
+    . un parser st pour lire les classes et methodes de base depuis la vm pour
+      avoir une vm minimale cappable de fileIn le reste.
+    . Voir Little Smalltalk ici: https://github.com/crcx/littlesmalltalk, et
+      voir comment gnu-smalltalk génère une image propre.
+
+- Limiter le nombre de primitives; Avec le système FFI enlever les primitives
+qui ne concernent pas la vm dirrectement. Garder: arythmetic primitives,
+storage management primitives, control primitives, system primitives (voir
+"ressources ffi"
+
+- Plus de mémoire: 32/64 bits pour l'espace memoire.
+
+- GC tiptop: utiliser le fonctionnement du GC java générationel de base. Voir
+"ressources gc" plus bas.
+
+- JIT voir QBE: https://c9x.me/compile/ (stable)
+et voir mir: https://github.com/vnmakarov/mir (a voir)
+
+- Refactoring pour pouvoir facilement ajouter des fonctions à la vm par ex:
+    . interpreteur (bluebook intepreter, optimized interpreter, jit simple
+      interpreter, ect)
+    . le jeux de primitives (pour s'adapter aux indexs de primitives attendu
+      par les images images ex: Squeak4.x, Pharo.x, gnu-smalltalk),
+    . le format mémoire (bluebook, Spur, v3, gnu-smalltalk) pour pouvoir
+      charger des images d'autres vm
+    . le gc (voir tous les modèles de gc dans java, low latency ect).
+
+# IMAGE/AUTRES
+
+- Séparer les fichiers source en "packages" avec un fichier descriptif qui
+indique:
+    . les dépendences vers d'autres packages et les versions minimales ou maximales
+    . les possible hooks à executer avant ou après le chargement (si c'est une lib)
+    . le code à executer pour démarer l'application (main) si ce n'est pas une lib
+    . le conteneur à utiliser (gui, no-gui, web)
+Voir "ressources gestion de code" plus bas.
+
+- Qui soit fortement typé (strongtalk), trouver un type de déclaration
+satisfaisant (strongtalk c'dest le bordel), et un système pour les types
+génériques. Peut être le mettre dans les commentaires " myvar is a Type "
+
+###############################################################################
+###############################################################################
+# RESSOURCES
+
+Pour le développement de opensmalltalk, plein de trucs ici:
+http://www.mirandabanda.org/cogblog/
+
+Pour smalltalk en général: https://rmod-files.lille.inria.fr/?dir=FreeBooks ou
+http://stephane.ducasse.free.fr/FreeBooks.html .
+
+Les codes source de:
+    . https://www.gnu.org/software/smalltalk/
+    . https://github.com/OpenSmalltalk/opensmalltalk-vm
+    . https://github.com/kyle-github/littlesmalltalk
+    . https://selflanguage.org/
+    . http://www.strongtalk.org/
+
+### ressource multi threading
+
+Qui supporte le multi threading (se joue des l'entête de l'objet en memoire?).
+(voir comment la mémoire dans java est foutue:
+https://docs.oracle.com/javase/specs/jvms/se20/html/jvms-2.html#jvms-2.5
+et comment les frame sont comment les registres du blue book:
+https://docs.oracle.com/javase/specs/jvms/se20/html/jvms-2.html#jvms-2.5,
+ou comment il synchronize:
+https://docs.oracle.com/javase/specs/jvms/se20/html/jvms-3.html#jvms-3.14)
+
+Le problème vient plutot de l'image que de la vm:
+
+"
+Multi-threading
+
+        While multi-threading seems like an obvious and important direction to
+    take the system in, making the VM multi-threaded per-se does not provide
+    any benefit before the Smalltalk image is made thread-safe and that is
+    probably more work than providing a multi-threaded VM. Â Hence a potentially
+    more profitable approach is to concentrate on federating multiple VMs
+    running multiple images, communicating through the threaded FFI.
+"
+(http://www.mirandabanda.org/cogblog/cog-projects/)
+
+Il faudra partager les semaphore?
+
+### ressources gc
+- Les instances de classes et autre objets "statiques" pourraient être allouées
+dans un compartiment ou gc ne passe pas, ou seulement quand il est édité
+(en mode interactif). Pour java c'est le "method area" (voir:
+https://docs.oracle.com/javase/specs/jvms/se20/html/jvms-2.html#jvms-2.5). Ou
+sinon, c'est le générational gc qui fera le bouleau.
+
+- Le sérial de java semble indiqué pour le peu de mémoire ici (16bits)
+pour des bonnes explications voir:
+https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/introduction.html
+Pour un un programme > 100mb ils préconnisent le Serial, et le CMS quand la
+mémoire est trop importante et que ça commence à bloquer.
+
+- voir ici: http://ftp.squeak.org/docs/OOPSLA.Squeak.html pour l'optimisation
+depuis une image de base base vers la v3 (back-to-the-future) en particulier:
+"
+    - recycling method contexts (this cut the allocation rate by a factor of 10)
+    - managing the frequency of checks for user and timer interrupts
+    - keeping the instruction and stack pointers (IP and SP) in registers
+    - making the IP and SP be direct pointers, rather than offsets into their base object
+    - patching the dispatch loop to eliminate an unneeded compiler-generated range check
+    - eliminating store-checks when storing into the active and home contexts
+    - comparing small integers as oops rather than converting them into integers first
+    - peeking for and doing a jump-if-false byte code that follows a compare
+"
+-voir ici: http://www.mirandabanda.org/cogblog/2013/09/05/a-spur-gear-for-cog/
+pour l'optimisation depuis la v3 vers spur.
+
+### ressources gestion de code
+
+Problème de smalltalk, impossible de maintenir tout les classes qui se
+retrouvent dans l'environnement. Il faut des packages. Autre problème, le
+déployement n'est pas clair. Les mises à jour libs/apps sont couplées, et
+la mise à jour de la vm pas garantie de fonctionner.
+
+Les idées:
+- un environnement dynamique pour développer une application (toujours)
+- on importe les libs dont on a besoin,
+- l'application (gui, opengl, cmd, web) s'execute dans des conteneur
+specifiques, testable dynamiquement (toujours),
+- lors du déployement, comme pour java, on inclue toutes les libs et l'
+application dans une archive,
+- pour l'execution, on lance une vm légère (sans editeurs, sans gui si c'est
+cmd/web/opengl/smartphone, un "kernel" lèger à la gnu-smalltalk, une mémoire séparée pour
+les objets "statiques" puisqu'on est plus en mode edition) avec l'archive
+et le conteneur à utiliser en argument (script sh).
+- et voila, la vm boote, charge les libs, l'application, la lance dans le
+conteneur. Possible de mettre à jour indépendament la vm, et l'application/libs
+avec une nouvelle archive.
+- en fait l'environnement dynamique/editeur serait lancée comme ça (conteneur
+gui).
+
+EspaceDeNoms
+- à la java, avec juste un ClassDescription qui peut aliasser des noms pour
+faire genre "import: mon.super.package.MaClasse as: MaClasse"
+- sauvegarder les classes sous forme de fichiers facile pour git, l'editeur
+permettrait de le modifier dirrectement ou d'utiliser l'outils smalltalk par
+defaut.
+
+### ressources idle
+
+Améliorer idle vu ici:
+http://www.mirandabanda.org/cogblog/cog-projects/
+
+"
+    Event-driven VM
+
+        The Cog VM, being derived from the standard Squeak VM, has an unsatisfactory
+    idle implementation, with the background process calling a yield primitive that
+    gives back time to the OS. Â This causes the VM to consume of the order of 3%-5%
+    at idle. Â Instead the VM should block awaiting events when it has nothing to do.
+    Â There are various attempts at an event-driven Squeak VM (e.g. for Android) but
+    none of this has been integrated into Cog, nor has the idle issue been addressed.
+    Â Closely related is to replace the use of select(2) for i/o polling with
+    kqueue(2)Â orÂ epoll(2) on platforms that support it.
+"
+
+Voir comment utiliser epoll sur linux  pour stdin/out/err (man epoll), voir
+comment utiliser epoll sur linux pour:
+https://stackoverflow.com/questions/22869068/xlib-multiple-windows-events-handling,
+en   particulier le XConnectionNumber.
+
+### ressources FFI
+
+Une lib smalltalk contient du code C. La lib C est lue, un "hook" permet de
+charger une table de fonctions. Les fonctions sont accessibles depuis une
+primitive unique "foreign code", qui contiens deux codes, celui de la table, et
+celui de la fonction dans la table.
+Le code de la table est attribué par la VM et poussé dans l'image dans un object
+pricis qui permettra au code de l'image de l'appeler. Celui de numéro de
+fonction est attribué au moment de la compilation de la lib.
+Juste trouver un moyen pour que ces primitives prennent en argument:
+- le code ou se trouve la table (attribué par la VM),
+- la position de la fonction,
+- les arguments à la fonction,
+Prevoir aussi le retour et type de retour de fonction.
+
+Le hook prend la table de fonction, et aussi un NomDeClasse, sous classe de
+ForeignPrimitive, dont la première variable de classe est tableIdentifier. La
+VM donne à cette variable la position de la table dans son array of tables.
+
+### idees perfs
+
+- Une image et vm au format "non interactive" ou les symboles et selecteurs sont
+déja résolus. Pour utiliser en production quand ni les classes ni le system
+dictionary n'ont à être modifiés.
+    - La vm pourrait aussi déterminer quels sont
+      les objets qui n'auront pas à être traités par le gc (classes methodes), pour
+      qu'il les mette dans une portion de mémoire à pars.
+    - ObjectMemory pourrait observer l ordre d'accès des objets dans cette
+      mémoire fixe, et les déplacer pour améliorer les cache hits.
+    - ObjectMemory pourrait utiliser une table pour referencer les objets comme
+      dans le smalltalk historique.
+
+- Une register-based vm, une image compilée à l'avance (mais qui sache aussi
+se modifier, recompiler), voir Android Dalvick et Art.
+
+- Quand les pointeur sont 32 ou 64 ya dla place pour mettre des shorts ou autre
+et mettre des flags en tête pour determiner si c'est des int/float (surtout
+sur les 64bits)
+
+- voir comment fonctionne zgc
+
