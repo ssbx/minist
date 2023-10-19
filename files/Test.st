@@ -35,11 +35,11 @@ cascade
     ^ a b c d !
 
 assign: c
-    | a b |
+    | a b c |
     a := b := c !
 
 assign
-    | a b |
+    | a b c |
     ^ (a := b := c ) !
 
 !

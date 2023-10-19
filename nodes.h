@@ -136,20 +136,8 @@ struct Temp {
     struct Temp *next;
 };
 
-
-/* XXX Should be used as a kind of ExprUnit that can be returned or assigned.
- * XXX See ExprUnit comments
-*/
-struct Expression {
-    struct Expression *next;
-    struct ExprUnit   *head;
-    int returns;
-    struct ExprUnit* assignsTo;
-};
-
-
 /*
- * The big thing. XXX This needs to be clarified.
+ * The big thing.
  */
 enum {
     ST_ID,
@@ -188,13 +176,14 @@ union ExprUnitType {
     struct EUnitSymbol    symbol;
     struct EUnitArray     array;
 };
+
 struct ExprUnit {
     int                type;
     union ExprUnitType u;
-    struct Cascade    *cascade;   /* XXX does this belong here? */
-    struct ExprUnit   *next;      /* XXX does an ExprUnit have next? */
-    int                returns;   /* XXX sould be in Expression */
-    struct ExprUnit   *assignsTo; /* XXX should be in Expression */
+    struct ExprUnit   *assignsTo; /* z := := x := y := myExprUnit */
+    struct Cascade    *cascade;   /* myExprUnit msg;  andOther: arg ; + 1 */
+    struct ExprUnit   *next;
+    int                returns;   /* ^ */
 };
 
 

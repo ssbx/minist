@@ -260,6 +260,7 @@ tempids: id             { $$ = mkTemp($1); }
  *****  Expressions are the body of the method, and the main thing ************
  ******************************************************************************
  *****************************************************************************/
+/* TODO ^ shold mark the end of a block */
 exprs: expr1            { $$ = $1; }
      | '^' expr1        { $$ = $2; $$->returns = 1; }
      | exprs '.'        { $$ = $1; }
