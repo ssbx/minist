@@ -3,7 +3,8 @@
 COMPTESTFILES=" tcomp1.st "
 PARSETESTFILES="
             tparse1.st \
-            tparse2.st"
+            tparse2.st \
+            tparse3.st "
 
 MINISTPROG=./minist-img-gen
 MINISTTMPOUT=/tmp/minist-tests

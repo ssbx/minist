@@ -48,12 +48,18 @@ static void print_cas(struct Cascade *c) {
             break;
     }
 }
+
+/* what ois this?? TODO remove print_exp */
 static void print_exp(struct ExprUnit* exp) {
     while (exp) {
         if (exp->returns) printf( " ^ ");
-        else if (exp->assignsTo)  {
-            print_eval(exp->assignsTo);
-            printf( " := ");
+        if (exp->assignsTo)  {
+            struct ExprUnit *assign = exp->assignsTo;
+            while (assign) {
+                print_eval(assign);
+                printf( " := ");
+                assign = assign->next;
+            }
         }
         print_eval(exp);
         printf( " .");
@@ -223,9 +229,13 @@ static void print_method(struct Method* m) {
         while (exp) {
             printf( "    ");
             if (exp->returns) printf( "^ ");
-            else if (exp->assignsTo)  {
-                print_eval(exp->assignsTo);
-                printf( " := ");
+            if (exp->assignsTo)  {
+                struct ExprUnit *assign = exp->assignsTo;
+                while (assign) {
+                    print_eval(assign);
+                    printf( " := ");
+                    assign = assign->next;
+                }
             }
             print_eval(exp);
             printf( " .\n");

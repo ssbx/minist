@@ -26,6 +26,8 @@ struct ClassFile* parsed_file = NULL;
 
 void freeExprUnit(struct ExprUnit *expr);
 void checkStr(char*, char*);
+
+void addAssignsTo(struct ExprUnit *exp, struct ExprUnit *id);
 struct ExprUnit* allocExprUnit(int);
 struct ExprUnit* mkArray(struct ExprUnit*);
 struct ExprUnit* mkArrayConst(struct ExprUnit*);
@@ -76,6 +78,7 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
     struct Method         *method;
     struct MethodDef      *message;
     struct ExprUnit       *uexpr;
+    struct Expression     *expression;
     struct Temp           *temp;
     struct BinaryMsg      *binmsg;
     struct KeywordMsg     *keymsg;
@@ -97,7 +100,7 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
 %type <category> category categories clscategories clscategory
 %type <method> method methods
 %type <temp> temps tempids
-%type <uexpr> exprs expr unaryexpr expr2 msgexpr keyexpr id unit prim prim2
+%type <uexpr> exprs expro expr2 expr1 unaryexpr msgexpr keyexpr id unit prim prim2
 %type <uexpr> binexpr block string charconst integer symconst literals
 %type <uexpr> primitive arrayconst
 %type <uexpr> arrayelement arrayelements array
@@ -257,25 +260,26 @@ tempids: id             { $$ = mkTemp($1); }
  *****  Expressions are the body of the method, and the main thing ************
  ******************************************************************************
  *****************************************************************************/
-exprs: expr             { $$ = $1; }
-     | '^' expr         { $$ = $2; $$->returns = 1; }
+exprs: expr1            { $$ = $1; }
+     | '^' expr1        { $$ = $2; $$->returns = 1; }
      | exprs '.'        { $$ = $1; }
-     | exprs '.' expr   { addExpr($1, $3);                  $$ = $1; }
-     | exprs '^' expr   { addExpr($1, $3); $3->returns = 1; $$ = $1; }
+     | exprs '.' expr1  { addExpr($1, $3);                  $$ = $1; }
+     | exprs '^' expr1  { addExpr($1, $3); $3->returns = 1; $$ = $1; } /* end of block */
 
 /******************************************************************************
- * The method -> exprs -> expr
+ * add assignment to expr2
  *****************************************************************************/
-expr: unit                 { $$ = $1;}
-    | expr2                { $$ = $1;}
-    | id ST_ASSIGN expr2   { $3->assignsTo = $1; $$ = $3; }
-    | id ST_ASSIGN unit    { $3->assignsTo = $1; $$ = $3; }
+expr1: expr2 | expro
+
+expro: id ST_ASSIGN expr2 { $$ = $3; $3->assignsTo = $1; }
+     | id ST_ASSIGN expro { $$ = $3; addAssignsTo($$, $1); }
 
 /******************************************************************************
- * add cascade to unary/bin/keyword exprs and make them expr2
+ * add cascade to unary/bin/keyword
  *****************************************************************************/
 msgexpr: unaryexpr | binexpr | keyexpr
-expr2: msgexpr          { $$ = $1; }
+expr2: unit             { $$ = $1; }
+     | msgexpr          { $$ = $1; }
      | expr2 ';' id     { addUnaryCascade($1, $3);   $$ = $1; }
      | expr2 ';' binmsg { addBinaryCascade($1, $3);  $$ = $1; }
      | expr2 ';' keymsg { addKeywordCascade($1, $3); $$ = $1; }
@@ -333,7 +337,7 @@ arrayelements:
 
 /* todo: arrayconstructor arrayconst bytearray array numbr arraysym exp
          binding eval */
-unit: id | literals | block | '(' expr ')' { $$ = $2;}
+unit: id | literals | block | '(' expr1 ')' { $$ = $2;}
 
 literals: integer | string | charconst | symconst | arrayconst
 
@@ -359,6 +363,14 @@ checkStr(char *a, char *b)
                                     fname, b, a, yylineno);
         exit(2);
     }
+}
+
+void
+addAssignsTo(struct ExprUnit *exp, struct ExprUnit *id)
+{
+    struct ExprUnit *last = exp->assignsTo;
+    while (last->next) last = last->next;
+    last->next = id;
 }
 
 struct ExprUnit*

@@ -139,14 +139,13 @@ struct Temp {
 
 /* XXX Should be used as a kind of ExprUnit that can be returned or assigned.
  * XXX See ExprUnit comments
+*/
 struct Expression {
-    int    type;
     struct Expression *next;
-    struct ExprUnit* eval;
-    int    returns;
+    struct ExprUnit   *head;
+    int returns;
     struct ExprUnit* assignsTo;
 };
-*/
 
 
 /*
@@ -208,7 +207,7 @@ struct BinaryMsg {
     struct BinaryMsg *next;
 };
 struct UnaryMsg {
-    struct ExprUnit *msg;
+    struct ExprUnit *msg; /* should be char XXX */
     struct UnaryMsg *next;
 };
 
