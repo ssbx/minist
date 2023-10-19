@@ -10,14 +10,22 @@ int   st_op;
 %option yylineno
 %option never-interactive
 
+ID    [a-zA-Z][a-zA-Z0-9]*
+KW    {ID}":"
+
 %%
 
-[a-zA-Z][a-zA-Z0-9]*     { return IDENTIFIER; }
-[a-zA-Z][A-Za-z0-9]*":"  { return KEYWORD; }
-":"[a-zA-Z][A-Za-z0-9]*  { return COLONVAR; }
-"#"[A-Za-z][A-Za-z0-9]*  { return SYMCONST; }
-"-"?[0-9]+               { return INTEGER; }
-"$"[!-~]                 { return CHARCONST; }
+{ID}       { return IDENTIFIER; }
+{KW}       { return KEYWORD;  }
+{KW}+      { return ARRAYSYM; }
+
+":"{ID}    { return COLONVAR; }
+
+"#"{ID}    { return SYMCONST; }
+"#"({KW}+) { return SYMCONST; }
+
+"-"?[0-9]+ { return INTEGER; }
+"$"[!-~]   { return CHARCONST; }
 
 "^"  { return '^'; }
 ":=" { return ST_ASSIGN; }

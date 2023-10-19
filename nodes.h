@@ -2,12 +2,14 @@
  * nodes.h
  *
  * This file contains all structures used by the parser the generate a tree of
- * nodes representing a smalltalk 80 class file. Notable users of the generated
- * tree, are compiler and pprinter.
+ * nodes representing a smalltalk 80 class file. Used  by the comp.c and
+ * pprint.c.
  *
+ * See struct ExprUnit bellow.
  */
 #ifndef PARSER_NODES
 #define PARSER_NODES
+
 struct ClassFile;
 struct ClassHeader;
 struct ClassComment;
@@ -71,7 +73,7 @@ struct ClassComment {
 struct MethodCategory {
     struct MethodCategory *next;
     char                  *name;
-    struct ExprUnit       *classname; // wtf should be string
+    char                  *classname; // wtf should be string
     struct Method         *methods;
 };
 
@@ -137,11 +139,23 @@ struct Temp {
 };
 
 /*
- * The big thing.
+ * struct ExprUnit: the big thing. This is where parse.y create a tree of
+ * expressions, taking care of the presedence. comp.c and pprint.c just have
+ * to follow a first expression, and "unroll" their arguments.
+ *
+ * Some ExprUnit can be evaluated:
+ *  - EUnitBinary
+ *  - EUnitUnary
+ *  - EUnitKeyword
+ *
+ * All ExprUnits can act as receiver or argument values.
+ *
+ * Note that parse.y have filled structures with msgs receiver arguments etc
+ * that follow the smalltak precedence rule.
+ *
  */
 enum {
     ST_ID,
-    ST_UNIT,
     ST_UNARY,
     ST_BINARY,
     ST_KEYWORD,
@@ -153,30 +167,33 @@ enum {
     ST_ARRAY,
     ST_ARRAYCONST
 };
-
-struct EUnitId      { char *name; };
-struct EUnitBinary  { int op; struct ExprUnit *receiver; struct BinaryMsg *msgs;};
+struct EUnitBinary  { struct ExprUnit *receiver; struct BinaryMsg *msgs; int op; };
 struct EUnitUnary   { struct ExprUnit *receiver; struct UnaryMsg *msgs; };
 struct EUnitKeyword { struct ExprUnit *receiver; struct KeywordMsg *msgs; };
-struct EUnitBlock   { struct BlockArg *args; struct Temp *temps; struct ExprUnit *exprs; };
-struct EUnitString  { char* value; };
-struct EUnitCharacter { char *value; };
+
+struct EUnitId      { char *name; };
+struct EUnitString  { char *value; };
+struct EUnitChar    { char *value; };
 struct EUnitInteger { char *value; };
 struct EUnitSymbol  { char *value; };
+struct EUnitBlock   { struct BlockArg *args; struct Temp *temps; struct ExprUnit *exprs; };
 struct EUnitArray   { struct ExprUnit *head; };
 union ExprUnitType {
-    struct EUnitId        id;
-    struct EUnitBinary    binary;
-    struct EUnitUnary     unary;
-    struct EUnitKeyword   keyword;
-    struct EUnitBlock     block;
-    struct EUnitString    string;
-    struct EUnitCharacter character;
-    struct EUnitInteger   integer;
-    struct EUnitSymbol    symbol;
-    struct EUnitArray     array;
+    struct EUnitId      id;
+    struct EUnitBinary  binary;
+    struct EUnitUnary   unary;
+    struct EUnitKeyword keyword;
+    struct EUnitBlock   block;
+    struct EUnitString  string;
+    struct EUnitChar    character;
+    struct EUnitInteger integer;
+    struct EUnitSymbol  symbol;
+    struct EUnitArray   array;
 };
 
+/*
+ * struct ExprUnit the main node
+ */
 struct ExprUnit {
     int                type;
     union ExprUnitType u;
@@ -196,7 +213,7 @@ struct BinaryMsg {
     struct BinaryMsg *next;
 };
 struct UnaryMsg {
-    struct ExprUnit *msg; /* should be char XXX */
+    char            *msg;
     struct UnaryMsg *next;
 };
 

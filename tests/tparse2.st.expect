@@ -5,7 +5,7 @@ Object subclass: #Rectangle
 	poolDictionaries: ''
 	category: 'Graphics-Primitives'!
 
-#Rectangle comment: 'I usually represent a rectangular area on the screen.  Arithmetic functions take points as arguments and carry out scaling and translating operations to create new Rectangles.  Rectangle functions create new Rectangles by determining intersections of rectangles with rectangles. '!
+Rectangle comment: 'I usually represent a rectangular area on the screen.  Arithmetic functions take points as arguments and carry out scaling and translating operations to create new Rectangles.  Rectangle functions create new Rectangles by determining intersections of rectangles with rectangles. '!
 
 !Rectangle methodsFor: 'accessing'!
 

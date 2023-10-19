@@ -89,7 +89,7 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
 %token ST_ASSIGN
 %token LESS_OR_EQUAL GREATER_OR_EQUAL NOT_EQUAL MODULO
 %token OBJECT_EQUALS OBJECT_NOT_EQUALS
-%token IDENTIFIER STRING KEYWORD SYMCONST COLONVAR CHARCONST INTEGER
+%token IDENTIFIER STRING KEYWORD ARRAYSYM SYMCONST COLONVAR CHARCONST INTEGER
 %token EOL CLASS
 
 %type <file> file
@@ -102,8 +102,8 @@ struct ClassHeader* mkClassHeader(struct ExprUnit*,struct ExprUnit*,
 %type <temp> temps tempids
 %type <uexpr> exprs expro expr2 expr1 unaryexpr msgexpr keyexpr id unit prim prim2
 %type <uexpr> binexpr block string charconst integer symconst literals
-%type <uexpr> primitive arrayconst
-%type <uexpr> arrayelement arrayelements array
+%type <uexpr> primitive arrayconst keyselsym
+%type <uexpr> arrayelement arrayelements array arraysym
 %type <blockarg> blockargs
 %type <binmsg> binmsg
 %type <keymsg> keymsg methodkeymsg
@@ -170,10 +170,23 @@ category: '!' id keysel string '!' methods '!' {
                 checkStr($3, "methodsFor:");
                 free($3);
                 $$ = mkMethodCategory($2, $4, $6); }
+        | '!' id keysel string keysel string '!' methods '!' {
+                checkStr($3, "methodsFor:");
+                checkStr($5, "stamp:");
+                free($3);
+                free($5);
+                $$ = mkMethodCategory($2, $4, $8); }
         | '!' id keysel string '!' '!' {
                 checkStr($3, "methodsFor:");
                 free($3);
                 $$ = mkMethodCategory($2, $4, NULL); }
+        | '!' id keysel string keysel string '!' '!' {
+                checkStr($3, "methodsFor:");
+                checkStr($5, "stamp:");
+                free($3);
+                free($5);
+                $$ = mkMethodCategory($2, $4, NULL); }
+
 
 /******************************************************************************
  * file -> clsclsheader
@@ -196,15 +209,33 @@ clscategories: clscategory
                 last->next = $2;
                 $$ = $1;}
 clscategory: '!' id id keysel string '!' methods '!' {
-                assert($3->type == ST_ID);
                 checkStr($3->u.id.name, "class");
+                freeExprUnit($3);
                 checkStr($4, "methodsFor:");
+                free($4);
                 $$ = mkMethodCategory($2, $5, $7); }
+           | '!' id id keysel string keysel string '!' methods '!' {
+                checkStr($3->u.id.name, "class");
+                freeExprUnit($3);
+                checkStr($4, "methodsFor:");
+                free($4);
+                checkStr($6, "stamp:");
+                free($6);
+                $$ = mkMethodCategory($2, $5, $9); }
            | '!' id id keysel string '!' '!' {
                 assert($3->type == ST_ID);
                 checkStr($3->u.id.name, "class");
                 checkStr($4, "methodsFor:");
                 $$ = mkMethodCategory($2, $5, NULL); }
+           | '!' id id keysel string keysel string '!' '!' {
+                assert($3->type == ST_ID);
+                checkStr($3->u.id.name, "class");
+                checkStr($4, "methodsFor:");
+                free($4);
+                checkStr($6, "stamp:");
+                free($6);
+                $$ = mkMethodCategory($2, $5, NULL); }
+
 
 /******************************************************************************
  * file -> category -> methods
@@ -327,7 +358,10 @@ arrayconst: '#' array { $$ = mkArrayConst($2); }
 array:  '(' arrayelements ')' { $$ = mkArray($2); }
      |  '(' ')'               { $$ = NULL; }
 
-arrayelement: literals | array
+arraysym: id        { $$ = mkSymbolExpr(strdup2($1->u.id.name)); freeExprUnit($1); }
+        | keysel    { $$ = mkSymbolExpr($1); }
+        | keyselsym { $$ = $1; };
+arrayelement: literals | array | arraysym
 arrayelements:
         arrayelement          { $$ = $1; }
       | arrayelements arrayelement    {
@@ -346,6 +380,7 @@ integer:   INTEGER    { $$ = mkIntExpr(strdup2(yytext)); }
 string:    STRING     { $$ = mkStringExpr(st_string); }
 charconst: CHARCONST  { $$ = mkCharExpr(strdup2(yytext)); }
 symconst:  SYMCONST   { $$ = mkSymbolExpr(strdup2(yytext)); }
+keyselsym: ARRAYSYM   { $$ = mkSymbolExpr(strdup2(yytext)); }
 id:        IDENTIFIER { $$ = mkIdExpr(strdup2(yytext)); }
 keysel:    KEYWORD    { $$ = strdup2(yytext); }
 colonvar:  COLONVAR   { $$ = strdup2(yytext); }
@@ -405,7 +440,12 @@ struct ExprUnit*
 mkSymbolExpr(char*v)
 {
     struct ExprUnit *t = allocExprUnit(ST_SYMBOL);
-    t->u.symbol.value = v;
+    if (v[0] == '#') {
+        t->u.symbol.value = strdup2(&v[1]);
+        free(v);
+    } else {
+        t->u.symbol.value = v;
+    }
     return t;
 }
 
@@ -601,8 +641,12 @@ struct UnaryMsg*
 mkUnaryMsg(struct ExprUnit *v)
 {
     struct UnaryMsg *t = malloc(sizeof(struct UnaryMsg));
-    t->msg = v;
     t->next = NULL;
+
+    assert(v->type == ST_ID);
+    t->msg = strdup2(v->u.id.name);
+    freeExprUnit(v);
+
     return t;
 }
 
@@ -691,11 +735,14 @@ mkMethodCategory(
         struct Method   *methods)
 {
     struct MethodCategory *c = malloc(sizeof(struct MethodCategory));
-    c->classname = classname; /* XX todo extract str */
 
     assert(category->type == ST_STRING);
     c->name = strdup2(category->u.string.value);
     freeExprUnit(category);
+
+    assert(classname->type == ST_ID);
+    c->classname = strdup2(classname->u.id.name);
+    freeExprUnit(classname);
 
     c->methods = methods;
     c->next = NULL;
@@ -731,7 +778,7 @@ mkFile(
     struct ClassFile *f = malloc(sizeof(struct ClassFile));
     f->header = head;
 
-    assert(strcmp(comment->className, &head->className[1]) == 0);
+    assert(strcmp(comment->className, head->className) == 0);
     f->comment = comment->str;
     free(comment);
     f->categories = category;

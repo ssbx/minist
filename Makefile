@@ -32,11 +32,13 @@ scan.yy.c scan.yy.h: scan.l parse.tab.h
 
 include depends.mk
 
-.PHONY: run clean depends check all
+.PHONY: t run clean depends check all
 all:: run
 
+t: minist-img-gen
+	./minist-img-gen -p files/Test.st
 run: minist-img-gen
-	./minist-img-gen files/Test.st
+	./minist-img-gen -p files/SR.st
 
 clean:
 	$(RM) minist-img-gen *.o parse.tab.* scan.yy.*

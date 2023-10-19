@@ -84,7 +84,7 @@ static void print_eval(struct ExprUnit *e) {
             print_eval(e->u.unary.receiver);
             struct UnaryMsg *umsg = e->u.unary.msgs;
             while (umsg) {
-                printf( " %s", umsg->msg->u.id.name);
+                printf( " %s", umsg->msg);
                 umsg = umsg->next;
             }
             cas = e->cascade;
@@ -174,10 +174,13 @@ static void print_eval(struct ExprUnit *e) {
 
         case ST_ARRAYCONST:
             printf( "#");
-
             if (e->u.array.head) print_eval(e->u.array.head);
             break;
-
+        case ST_SYMBOL:
+            printf(" #%s", e->u.symbol.value);
+            break;
+        default:
+            printf("EEEEEEEEEEEEEEEeeeeeeeeeerrror\n");
     }
 }
 
@@ -248,7 +251,7 @@ static void print_method(struct Method* m) {
 void pprinter_print(struct ClassFile *cf) {
     struct ClassHeader *h = cf->header;
     printf( "-----\n");
-    printf( "%s subclass: %s\n", h->super, h->className);
+    printf( "%s subclass: #%s\n", h->super, h->className);
     printf( "\tinstanceVariableNames: '");
     int i;
     for (i=0; i < h->instsVarNamesCount; i++) {
@@ -275,7 +278,7 @@ void pprinter_print(struct ClassFile *cf) {
     printf( "\n");
     struct MethodCategory *m = cf->categories;
     while (m) {
-        printf( "!%s methodsFor: '%s'!\n", m->classname->u.id.name, m->name);
+        printf( "!%s methodsFor: '%s'!\n", m->classname, m->name);
         printf( "\n");
         struct Method *met = m->methods;
         while(met) {
@@ -296,7 +299,7 @@ void pprinter_print(struct ClassFile *cf) {
 
         struct MethodCategory * mmm = cf->classCategories;
         while (mmm) {
-            printf( "!%s class methodsFor: '%s'!\n\n", mmm->classname->u.id.name, mmm->name);
+            printf( "!%s class methodsFor: '%s'!\n\n", mmm->classname, mmm->name);
             struct Method* mmmet = mmm->methods;
             while (mmmet) {
                 print_method(mmmet);

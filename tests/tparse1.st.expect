@@ -5,7 +5,7 @@ Object subclass: #Rectangle
 	poolDictionaries: ''
 	category: 'Graphics-Primitives'!
 
-#Rectangle comment: 'comment'!
+Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'accessing'!
 

@@ -1,9 +1,3 @@
-- nettoyage:
-    - enlever de ExprUnit ce qui semble basique id int char ... et les transformer
-    en ExprUnit quand un message arrive sur eux, ou en Expression (^id ou id := id.);
-    - bien mettre en valeur l'arboressence dans l'API et es ExprUnits qu'on
-    sache bien ce qu'on est en train de voir (la c'est le bordel).
-
 - completer le parser
 - completer le bytecode compiler
 - créer un object memory et faire un running live smalltalk

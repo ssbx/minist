@@ -44,13 +44,27 @@ cascade
  ! 
 
 assign: c 
-    | a b |
+    | a b c |
      b  :=  a  :=  c  .
  ! 
 
 assign
-    | a b |
+    | a b c |
     ^  b  :=  a  :=  c  .
+ ! !
+
+!Rectangle methodsFor: 'test'!
+
+
+
+dd
+    ^ 2 .
+ ! 
+
+withSide: side setTo: value 
+    ^ ( self  perform: (#( #withLeft:  #withRight:  #withTop:  #withBottom: ) at: (#( #left  #right  #top  #bottom ) indexOf:  side )) with:  value ) .
+     b  := #(1 2 3  #a:  #at:put:  #a  #b  #a: ) .
+    ( self  perform: ( a  at:  x ) with:  b ) .
  ! !
 
 "= = = == = "!

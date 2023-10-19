@@ -1,10 +1,9 @@
-﻿'From Squeak6.0 of 5 July 2022 [latest update: #22104] on 3 October 2023 at 1:41:18 pm'!
-Object subclass: #Rectangle
+﻿Object subclass: #Rectangle
 	instanceVariableNames: 'origin corner'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Graphics-Primitives'!
-!Rectangle commentStamp: 'nice 7/25/2010 14:56' prior: 0!
+Rectangle comment: '
 I represent a rectangular area of the screen. Arithmetic functions take points as arguments and carry out scaling and translating operations to create new instances of me. Rectangle functions create new instances by determining intersections of rectangles with rectangles.
 
 Note 1: only rectangles parallel to reference frame (Screen) can be represented by this class.
@@ -23,8 +22,8 @@ If this leads to a negative width (extent x coordinate) and/or a negative height
 
 Instance variables:
 	origin	<Point> the coordinates of corner having smallest coordinates (top left in Screen coordinates)
-	corner	<Point> the coordinates of corner having largest coordinates (bottom right in Screen coordinates)
-!
+	corner	<Point> the coordinates of corner having largest coordinates (bottom right in Screen coordinates) '!
+
 
 
 !Rectangle methodsFor: 'accessing' stamp: 'acg 2/23/2000 00:52'!
