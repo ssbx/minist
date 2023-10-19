@@ -27,7 +27,7 @@ at: index
 
 at: index put: value 
     <primitive: 61>
-    (( index  isInteger) ifTrue: [((( index   1) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
+    (( index  isInteger) ifTrue: [((( index    1 ) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
     (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  at: ( index  truncated) put:  value ) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
  ! 
 
@@ -39,13 +39,13 @@ basicAt: index
 
 basicAt: index put: value 
     <primitive: 61>
-    (( index  isKindOf:  Integer ) ifTrue: [((( index   1) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
+    (( index  isKindOf:  Integer ) ifTrue: [((( index    1 ) and: [( index   ( self  size)) .]) ifTrue: [( self  errorImproperStore) .] ifFalse: [( self  errorSubscriptBounds:  index ) .]) .]) .
     (( index  isKindOf:  Number ) ifTrue: [ ^ ( self  basicAt: ( index  truncated) put:  value ) .] ifFalse: [( self  errorNonIntegerIndex) .]) .
  ! 
 
 basicSize
     <primitive: 62>
-    ^ 0 .
+    ^  0  .
  ! 
 
 readFromString: aString 
@@ -54,7 +54,7 @@ readFromString: aString
 
 size
     <primitive: 62>
-    ^ 0 .
+    ^  0  .
  ! 
 
 yourself
@@ -118,9 +118,9 @@ deepCopy
     | newObject class index |
      class  := ( self  class) .
     (( class    Object ) ifTrue: [ ^  self  .]) .
-    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  > 0) .] whileTrue: [( newObject  basicAt:  index  put: (( self  basicAt:  index ) deepCopy)) . index  := ( index  - 1) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
+    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  >  0 ) .] whileTrue: [( newObject  basicAt:  index  put: (( self  basicAt:  index ) deepCopy)) . index  := ( index  -  1 ) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
      index  := ( class  instSize) .
-    ([( index  > 0) .] whileTrue: [( newObject  instVarAt:  index  put: (( self  instVarAt:  index ) deepCopy)) . index  := ( index  - 1) .]) .
+    ([( index  >  0 ) .] whileTrue: [( newObject  instVarAt:  index  put: (( self  instVarAt:  index ) deepCopy)) . index  := ( index  -  1 ) .]) .
     ^  newObject  .
  ! 
 
@@ -128,9 +128,9 @@ shallowCopy
     | class newObject index |
      class  := ( self  class) .
     (( class    Object ) ifTrue: [ ^  self  .]) .
-    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  > 0) .] whileTrue: [( newObject  basicAt:  index  put: ( self  basicAt:  index )) . index  := ( index  - 1) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
+    (( class  isVariable) ifTrue: [ index  := ( self  basicSize) . newObject  := ( class  basicNew:  index ) .([( index  >  0 ) .] whileTrue: [( newObject  basicAt:  index  put: ( self  basicAt:  index )) . index  := ( index  -  1 ) .]) .] ifFalse: [ newObject  := ( class  basicNew) .]) .
      index  := ( class  instSize) .
-    ([( index  > 0) .] whileTrue: [( newObject  instVarAt:  index  put: ( self  instVarAt:  index )) . index  := ( index  - 1) .]) .
+    ([( index  >  0 ) .] whileTrue: [( newObject  instVarAt:  index  put: ( self  instVarAt:  index )) . index  := ( index  -  1 ) .]) .
     ^  newObject  .
  ! !
 
@@ -204,12 +204,12 @@ isLiteral
 printOn: aStream 
     | title |
      title  := ( self  class name) .
-    ( aStream  nextPutAll: (((( title  at: 1) isVowel) ifTrue: ['an ' .] ifFalse: ['a ' .]) ,  title )) .
+    ( aStream  nextPutAll: (((( title  at:  1 ) isVowel) ifTrue: ['an ' .] ifFalse: ['a ' .]) ,  title )) .
  ! 
 
 printString
     | aStream |
-     aStream  := ( WriteStream  on: ( String  new: 16)) .
+     aStream  := ( WriteStream  on: ( String  new:  16 )) .
     ( self  printOn:  aStream ) .
     ^ ( aStream  contents) .
  ! 
@@ -217,14 +217,14 @@ printString
 storeOn: aStream 
     ( aStream  nextPut: $() .
     (( self  class isVariable) ifTrue: [( aStream  nextPutAll: ('(' , ( self  class name) , ' basicNew: ') ;  store: ( self  basicSize) ;  nextPutAll: ') ') .] ifFalse: [( aStream  nextPutAll: (( self  class name) , ' basicNew')) .]) .
-    (1 to: ( self  class instSize) do: [ :i |( aStream  nextPutAll: ' instVarAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  instVarAt:  i ) ;  nextPut: $;) .]) .
-    (1 to: ( self  basicSize) do: [ :i |( aStream  nextPutAll: ' basicAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  basicAt:  i ) ;  nextPut: $;) .]) .
+    ( 1  to: ( self  class instSize) do: [ :i |( aStream  nextPutAll: ' instVarAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  instVarAt:  i ) ;  nextPut: $;) .]) .
+    ( 1  to: ( self  basicSize) do: [ :i |( aStream  nextPutAll: ' basicAt: ' ;  store:  i  ;  nextPutAll: ' put: ' ;  store: ( self  basicAt:  i ) ;  nextPut: $;) .]) .
     ( aStream  nextPutAll: ' yourself)') .
  ! 
 
 storeString
     | aStream |
-     aStream  := ( WriteStream  on: ( String  new: 16)) .
+     aStream  := ( WriteStream  on: ( String  new:  16 )) .
     ( self  storeOn:  aStream ) .
     ^ ( aStream  contents) .
  ! !
@@ -256,7 +256,7 @@ respondsTo: aSymbol
 
 perform: aSymbol 
     <primitive: 83>
-    ^ ( self  perform:  aSymbol  withArguments: ( Array  new: 0)) .
+    ^ ( self  perform:  aSymbol  withArguments: ( Array  new:  0 )) .
  ! 
 
 perform: aSymbol with: anObject 
@@ -423,7 +423,7 @@ errorSubscriptBounds: index
 
 forkEmergencyEvaluatorAt: priority 
     | stream char |
-    ([( Display  white: ((0 @ 0) extent: (1024 @ 36))) .(('EMERGENCY EVALUATOR (priority ' , ( priority  printString) , ') -- type an expression terminated by ESC') displayAt: (50 @ 0)) .( Display  reverse: ((0 @ 0) extent: (1024 @ 36))) . stream  := ( WriteStream  on: ( String  new)) .([([( Sensor  keyboardPressed) .] whileFalse) .(( Sensor  keyboard) = (160 asCharacter)) .] whileFalse: [(( char  = ( Character  backspace)) ifTrue: [( stream  skip: -1) .( Display  black: ((0 @ 18) extent: (1024 @ 18))) .] ifFalse: [( stream  nextPut:  char ) .]) .(( stream  contents) displayAt: (50 @ 18)) .]) .( Display  black: ((0 @ 0) extent: (1024 @ 18))) .((( Compiler  evaluate: ( stream  contents)) printString) displayAt: (50 @ 0)) .] forkAt:  priority ) .
+    ([( Display  white: (( 0  @  0 ) extent: ( 1024  @  36 ))) .(('EMERGENCY EVALUATOR (priority ' , ( priority  printString) , ') -- type an expression terminated by ESC') displayAt: ( 50  @  0 )) .( Display  reverse: (( 0  @  0 ) extent: ( 1024  @  36 ))) . stream  := ( WriteStream  on: ( String  new)) .([([( Sensor  keyboardPressed) .] whileFalse) .(( Sensor  keyboard) = ( 160  asCharacter)) .] whileFalse: [(( char  = ( Character  backspace)) ifTrue: [( stream  skip:  -1 ) .( Display  black: (( 0  @  18 ) extent: ( 1024  @  18 ))) .] ifFalse: [( stream  nextPut:  char ) .]) .(( stream  contents) displayAt: ( 50  @  18 )) .]) .( Display  black: (( 0  @  0 ) extent: ( 1024  @  18 ))) .((( Compiler  evaluate: ( stream  contents)) printString) displayAt: ( 50  @  0 )) .] forkAt:  priority ) .
  ! 
 
 mustBeBoolean
@@ -433,8 +433,8 @@ mustBeBoolean
 
 nilFields
     (( self  class isPointers) ifFalse: [ ^  self  .]) .
-    (1 to: ( self  basicSize) do: [ :index |( self  basicAt:  index  put:  nil ) .]) .
-    (1 to: ( self  class instSize) do: [ :index |( self  instVarAt:  index  put:  nil ) .]) .
+    ( 1  to: ( self  basicSize) do: [ :index |( self  basicAt:  index  put:  nil ) .]) .
+    ( 1  to: ( self  class instSize) do: [ :index |( self  instVarAt:  index  put:  nil ) .]) .
  ! 
 
 primitiveError: aString 
@@ -444,8 +444,8 @@ primitiveError: aString
     ( Transcript  show:  aString ) .
     ( Transcript  cr) .
      context  := ( thisContext  sender sender) .
-    (3 timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .
-    ([( Transcript  show: '**type <s> for more stack; anything else restarts scheduler**') .( Transcript  cr) . key  := ( Sensor  keyboard) .( key  = $s | ( key  = $S)) .] whileTrue: [(5 timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .]) .
+    ( 3  timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .
+    ([( Transcript  show: '**type <s> for more stack; anything else restarts scheduler**') .( Transcript  cr) . key  := ( Sensor  keyboard) .( key  = $s | ( key  = $S)) .] whileTrue: [( 5  timesRepeat: [(( context    nil ) ifFalse: [( Transcript  print: ( context  sender) ;   ) .]) .]) .]) .
     ( ScheduledControllers  searchForActiveController) .
  ! 
 
@@ -496,7 +496,7 @@ whatIsAPrimitive
 
 
 initializeDependentsFields
-     DependentsFields  := ( IdentityDictionary  new: 4) .
+     DependentsFields  := ( IdentityDictionary  new:  4 ) .
  ! 
 
 initializeErrorRecursion

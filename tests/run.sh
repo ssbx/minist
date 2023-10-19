@@ -12,6 +12,17 @@ PARSETESTFILES="
 
 MINISTPROG=./minist-img-gen
 
+#
+# reset
+#
+#for i in $PARSETESTFILES; do
+#    mv $i.expect.out $i.expect
+#done
+#exit
+#for i in $COMPTESTFILES; do
+#   mv ./tests/$i.expect.out ./tests/$i.expect
+#done
+
 for i in $PARSETESTFILES; do
     $MINISTPROG -p ./tests/$i > ./tests/$i.expect.out
     diff ./tests/$i.expect ./tests/$i.expect.out> /dev/null 2>&1 && echo -n "SUCCESS" || echo -n "FAILED"

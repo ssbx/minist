@@ -19,7 +19,7 @@ Rectangle comment: 'comment'!
 
 + anInteger4
     | tmpx tmpy |
-    ^ origin * tmpx * tmpy * anInteger4 !
+    tmpx := origin * tmpx * tmpy * anInteger4 !
 
 mult: x by: y and: z
     ^ x * y * z !

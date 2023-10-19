@@ -31,7 +31,7 @@ Instance variables:
 
 
 aboveCenter
-    ^ (( self  topLeft) + ( self  bottomRight)  (2 @ 3)) .
+    ^ (( self  topLeft) + ( self  bottomRight)  ( 2  @  3 )) .
  ! !
 
 !Rectangle methodsFor: 'accessing'!
@@ -40,8 +40,8 @@ aboveCenter
 
 area
     | w |
-    ((( self  width)  0) ifTrue: [ ^ 0 .]) .
-    ^ (( w  * ( self  height)) max: 0) .
+    ((( self  width)   0 ) ifTrue: [ ^  0  .]) .
+    ^ (( w  * ( self  height)) max:  0 ) .
  ! !
 
 !Rectangle methodsFor: 'accessing'!
@@ -97,7 +97,7 @@ boundingBox
 
 
 center
-    ^ (( self  topLeft) + ( self  bottomRight)  2) .
+    ^ (( self  topLeft) + ( self  bottomRight)   2 ) .
  ! !
 
 !Rectangle methodsFor: 'accessing'!
@@ -138,7 +138,7 @@ height
 
 innerCorners
     | r1 |
-     r1  := (( self  topLeft) corner: (( self  bottomRight) - (1 @ 1))) .
+     r1  := (( self  topLeft) corner: (( self  bottomRight) - ( 1  @  1 ))) .
     ^ ( Array  with: ( r1  topLeft) with: ( r1  bottomLeft) with: ( r1  bottomRight) with: ( r1  topRight)) .
  ! !
 
@@ -268,7 +268,7 @@ hash
 
 deltaToEnsureInOrCentered: r extra: aNumber 
     | dX dY halfXDiff halfYDiff |
-     dY  :=  dX  := 0 .
+     dY  :=  dX  :=  0  .
      halfXDiff  := ((( r  width) - ( self  width) *  aNumber ) truncated) .
      halfYDiff  := ((( r  height) - ( self  height) *  aNumber ) truncated) .
     ((( self  left) < ( r  left)) ifTrue: [ dX  := (( self  left) - ( r  left) -  halfXDiff ) .] ifFalse: [((( self  right) > ( r  right)) ifTrue: [ dX  := (( self  right) - ( r  right) +  halfXDiff ) .]) .]) .
@@ -312,7 +312,7 @@ adjustTo: newRect along: side
 
 
 allAreasOutsideList: aCollection do: aBlock 
-    ^ ( self  allAreasOutsideList:  aCollection  startingAt: 1 do:  aBlock ) .
+    ^ ( self  allAreasOutsideList:  aCollection  startingAt:  1  do:  aBlock ) .
  ! !
 
 !Rectangle methodsFor: 'rectangle functions'!
@@ -322,11 +322,11 @@ allAreasOutsideList: aCollection do: aBlock
 allAreasOutsideList: aCollection startingAt: startIndex do: aBlock 
     | yOrigin yCorner aRectangle index rr |
      index  :=  startIndex  .
-    ([(( index   ( aCollection  size)) ifFalse: [ ^ ( aBlock  value:  self ) .]) . aRectangle  := ( aCollection  at:  index ) .(( origin   ( aRectangle  corner)) and: [(( aRectangle  origin)   corner ) .]) .] whileFalse: [ index  := ( index  + 1) .]) .
-    ((( aRectangle  origin y) > ( origin  y)) ifTrue: [ rr  := ( origin  corner: (( corner  x) @ ( aRectangle  origin y))) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  + 1) do:  aBlock ) .] ifFalse: [ yOrigin  := ( origin  y) .]) .
-    ((( aRectangle  corner y) < ( corner  y)) ifTrue: [ rr  := ((( origin  x) @ ( aRectangle  corner y)) corner:  corner ) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  + 1) do:  aBlock ) .] ifFalse: [ yCorner  := ( corner  y) .]) .
-    ((( aRectangle  origin x) > ( origin  x)) ifTrue: [ rr  := ((( origin  x) @  yOrigin ) corner: (( aRectangle  origin x) @  yCorner )) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  + 1) do:  aBlock ) .]) .
-    ((( aRectangle  corner x) < ( corner  x)) ifTrue: [ rr  := ((( aRectangle  corner x) @  yOrigin ) corner: (( corner  x) @  yCorner )) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  + 1) do:  aBlock ) .]) .
+    ([(( index   ( aCollection  size)) ifFalse: [ ^ ( aBlock  value:  self ) .]) . aRectangle  := ( aCollection  at:  index ) .(( origin   ( aRectangle  corner)) and: [(( aRectangle  origin)   corner ) .]) .] whileFalse: [ index  := ( index  +  1 ) .]) .
+    ((( aRectangle  origin y) > ( origin  y)) ifTrue: [ rr  := ( origin  corner: (( corner  x) @ ( aRectangle  origin y))) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  +  1 ) do:  aBlock ) .] ifFalse: [ yOrigin  := ( origin  y) .]) .
+    ((( aRectangle  corner y) < ( corner  y)) ifTrue: [ rr  := ((( origin  x) @ ( aRectangle  corner y)) corner:  corner ) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  +  1 ) do:  aBlock ) .] ifFalse: [ yCorner  := ( corner  y) .]) .
+    ((( aRectangle  origin x) > ( origin  x)) ifTrue: [ rr  := ((( origin  x) @  yOrigin ) corner: (( aRectangle  origin x) @  yCorner )) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  +  1 ) do:  aBlock ) .]) .
+    ((( aRectangle  corner x) < ( corner  x)) ifTrue: [ rr  := ((( aRectangle  corner x) @  yOrigin ) corner: (( corner  x) @  yCorner )) .( rr  allAreasOutsideList:  aCollection  startingAt: ( index  +  1 ) do:  aBlock ) .]) .
  ! !
 
 !Rectangle methodsFor: 'rectangle functions'!
@@ -335,8 +335,8 @@ allAreasOutsideList: aCollection startingAt: startIndex do: aBlock
 
 amountToTranslateWithin: aRectangle 
     | dx dy |
-     dx  := 0 .
-     dy  := 0 .
+     dx  :=  0  .
+     dy  :=  0  .
     ((( self  right) > ( aRectangle  right)) ifTrue: [ dx  := (( aRectangle  right) - ( self  right)) .]) .
     ((( self  bottom) > ( aRectangle  bottom)) ifTrue: [ dy  := (( aRectangle  bottom) - ( self  bottom)) .]) .
     (((( self  left) +  dx ) < ( aRectangle  left)) ifTrue: [ dx  := (( aRectangle  left) - ( self  left)) .]) .
@@ -400,10 +400,10 @@ extendBy: delta
 forPoint: aPoint closestSideDistLen: sideDistLenBlock 
     | side |
      side  := ( self  sideNearestTo:  aPoint ) .
-    (( side    #right) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  right) - ( aPoint  x)) abs) value: ((( aPoint  y) between: ( self  top) and: ( self  bottom)) ifTrue: [( self  height) .] ifFalse: [0 .])) .]) .
-    (( side    #left) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  left) - ( aPoint  x)) abs) value: ((( aPoint  y) between: ( self  top) and: ( self  bottom)) ifTrue: [( self  height) .] ifFalse: [0 .])) .]) .
-    (( side    #bottom) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  bottom) - ( aPoint  y)) abs) value: ((( aPoint  x) between: ( self  left) and: ( self  right)) ifTrue: [( self  width) .] ifFalse: [0 .])) .]) .
-    (( side    #top) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  top) - ( aPoint  y)) abs) value: ((( aPoint  x) between: ( self  left) and: ( self  right)) ifTrue: [( self  width) .] ifFalse: [0 .])) .]) .
+    (( side    #right) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  right) - ( aPoint  x)) abs) value: ((( aPoint  y) between: ( self  top) and: ( self  bottom)) ifTrue: [( self  height) .] ifFalse: [ 0  .])) .]) .
+    (( side    #left) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  left) - ( aPoint  x)) abs) value: ((( aPoint  y) between: ( self  top) and: ( self  bottom)) ifTrue: [( self  height) .] ifFalse: [ 0  .])) .]) .
+    (( side    #bottom) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  bottom) - ( aPoint  y)) abs) value: ((( aPoint  x) between: ( self  left) and: ( self  right)) ifTrue: [( self  width) .] ifFalse: [ 0  .])) .]) .
+    (( side    #top) ifTrue: [ ^ ( sideDistLenBlock  value:  side  value: ((( self  top) - ( aPoint  y)) abs) value: ((( aPoint  x) between: ( self  left) and: ( self  right)) ifTrue: [( self  width) .] ifFalse: [ 0  .])) .]) .
  ! !
 
 !Rectangle methodsFor: 'rectangle functions'!
@@ -577,7 +577,7 @@ withSide: side setTo: value
 
 
 withSideOrCorner: side setToPoint: newPoint 
-    ^ ( self  withSideOrCorner:  side  setToPoint:  newPoint  minExtent: (0 @ 0)) .
+    ^ ( self  withSideOrCorner:  side  setToPoint:  newPoint  minExtent: ( 0  @  0 )) .
  ! !
 
 !Rectangle methodsFor: 'rectangle functions'!
@@ -758,12 +758,12 @@ leftHalf
 
 newRectButtonPressedDo: newRectBlock 
     | rect newRect buttonNow delay |
-     delay  := ( Delay  forMilliseconds: 10) .
+     delay  := ( Delay  forMilliseconds:  10 ) .
      buttonNow  := ( Sensor  anyButtonPressed) .
      rect  :=  self  .
-    ( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .
-    ([ buttonNow  .] whileTrue: [( delay  wait) . buttonNow  := ( Sensor  anyButtonPressed) . newRect  := ( newRectBlock  value:  rect ) .(( newRect  =  rect ) ifFalse: [( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .( Display  border:  newRect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) . rect  :=  newRect  .]) .]) .
-    ( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .
+    ( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .
+    ([ buttonNow  .] whileTrue: [( delay  wait) . buttonNow  := ( Sensor  anyButtonPressed) . newRect  := ( newRectBlock  value:  rect ) .(( newRect  =  rect ) ifFalse: [( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .( Display  border:  newRect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) . rect  :=  newRect  .]) .]) .
+    ( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .
     ( Project  current pointerMoved) .
     ( Sensor  processEvent: ( Sensor  createMouseEvent)) .
     ^  rect  .
@@ -775,12 +775,12 @@ newRectButtonPressedDo: newRectBlock
 
 newRectFrom: newRectBlock 
     | rect newRect buttonStart buttonNow delay |
-     delay  := ( Delay  forMilliseconds: 10) .
+     delay  := ( Delay  forMilliseconds:  10 ) .
      buttonNow  :=  buttonStart  := ( Sensor  anyButtonPressed) .
      rect  :=  self  .
-    ( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .
-    ([( buttonNow    buttonStart ) .] whileTrue: [( delay  wait) . buttonNow  := ( Sensor  anyButtonPressed) . newRect  := ( newRectBlock  value:  rect ) .(( newRect  =  rect ) ifFalse: [( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .( Display  border:  newRect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) . rect  :=  newRect  .]) .]) .
-    ( Display  border:  rect  width: 2 rule: ( Form  reverse) fillColor: ( Color  gray)) .
+    ( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .
+    ([( buttonNow    buttonStart ) .] whileTrue: [( delay  wait) . buttonNow  := ( Sensor  anyButtonPressed) . newRect  := ( newRectBlock  value:  rect ) .(( newRect  =  rect ) ifFalse: [( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .( Display  border:  newRect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) . rect  :=  newRect  .]) .]) .
+    ( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .
     ( Project  current pointerMoved) .
     ( Sensor  processEvent: ( Sensor  createMouseEvent)) .
     ^  rect  .
@@ -999,12 +999,12 @@ encodePostscriptOn: aStream
 
 encodeForRemoteCanvas
     | encoded |
-    ( CanvasEncoder  at: 2 count: 1) .
-     encoded  := ( String  new: 16) .
-    ( encoded  putInteger32: ( origin  x asInteger) at: 1) .
-    ( encoded  putInteger32: ( origin  y asInteger) at: 5) .
-    ( encoded  putInteger32: ( corner  x asInteger) at: 9) .
-    ( encoded  putInteger32: ( corner  y asInteger) at: 13) .
+    ( CanvasEncoder  at:  2  count:  1 ) .
+     encoded  := ( String  new:  16 ) .
+    ( encoded  putInteger32: ( origin  x asInteger) at:  1 ) .
+    ( encoded  putInteger32: ( origin  y asInteger) at:  5 ) .
+    ( encoded  putInteger32: ( corner  x asInteger) at:  9 ) .
+    ( encoded  putInteger32: ( corner  y asInteger) at:  13 ) .
     ^  encoded  .
  ! !
 
@@ -1014,11 +1014,11 @@ encodeForRemoteCanvas
 
 encodeForRemoteCanvasB
     | encoded |
-     encoded  := ( Bitmap  new: 4) .
-    ( encoded  at: 1 put: ( origin  x asInteger)) .
-    ( encoded  at: 2 put: ( origin  y asInteger)) .
-    ( encoded  at: 3 put: ( corner  x asInteger)) .
-    ( encoded  at: 4 put: ( corner  y asInteger)) .
+     encoded  := ( Bitmap  new:  4 ) .
+    ( encoded  at:  1  put: ( origin  x asInteger)) .
+    ( encoded  at:  2  put: ( origin  y asInteger)) .
+    ( encoded  at:  3  put: ( corner  x asInteger)) .
+    ( encoded  at:  4  put: ( corner  y asInteger)) .
     ^  encoded  .
  ! !
 
@@ -1045,7 +1045,7 @@ Rectangle class instanceVariableNames: '' !
 
 
 center: centerPoint extent: extentPoint 
-    ^ ( self  origin: ( centerPoint  - ( extentPoint   2)) extent:  extentPoint ) .
+    ^ ( self  origin: ( centerPoint  - ( extentPoint    2 )) extent:  extentPoint ) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
 
@@ -1062,14 +1062,14 @@ encompassing: listOfPoints
 
 
 exactCenter: centerPoint extent: extentPoint 
-    ^ ( self  origin: ( centerPoint  - ( extentPoint  / 2)) extent:  extentPoint ) .
+    ^ ( self  origin: ( centerPoint  - ( extentPoint  /  2 )) extent:  extentPoint ) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
 
 
 
 fromUser
-    ^ ( self  fromUser: (1 @ 1)) .
+    ^ ( self  fromUser: ( 1  @  1 )) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
 
@@ -1077,7 +1077,7 @@ fromUser
 
 fromUser: gridPoint 
     | originRect |
-     originRect  := (( Cursor  origin) showWhile: [(((( Sensor  cursorPoint) grid:  gridPoint ) extent: (0 @ 0)) newRectFrom: [ :f |((( Sensor  cursorPoint) grid:  gridPoint ) extent: (0 @ 0)) .]) .]) .
+     originRect  := (( Cursor  origin) showWhile: [(((( Sensor  cursorPoint) grid:  gridPoint ) extent: ( 0  @  0 )) newRectFrom: [ :f |((( Sensor  cursorPoint) grid:  gridPoint ) extent: ( 0  @  0 )) .]) .]) .
     ^ (( Cursor  corner) showWhile: [( originRect  newRectFrom: [ :f |(( f  origin) corner: (( Sensor  cursorPoint) grid:  gridPoint )) .]) .]) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
@@ -1092,7 +1092,7 @@ left: leftNumber right: rightNumber top: topNumber bottom: bottomNumber
 
 
 locateMagnifiedView: aForm scale: scaleFactor 
-    ^ ( self  originFromUser: (( aForm  extent) *  scaleFactor  + (0 @ 50))) .
+    ^ ( self  originFromUser: (( aForm  extent) *  scaleFactor  + ( 0  @  50 ))) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
 
@@ -1124,7 +1124,7 @@ origin: originPoint extent: extentPoint
 
 
 originFromUser: extentPoint 
-    ^ ( self  originFromUser:  extentPoint  grid: (1 @ 1)) .
+    ^ ( self  originFromUser:  extentPoint  grid: ( 1  @  1 )) .
  ! !
 !Rectangle class methodsFor: 'instance creation'!
 

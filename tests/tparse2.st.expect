@@ -40,7 +40,7 @@ bottomRight: bottomRightPoint
  ! 
 
 center
-    ^ (( self  topLeft) + ( self  bottomRight)  2) .
+    ^ (( self  topLeft) + ( self  bottomRight)   2 ) .
  ! 
 
 corner
@@ -163,7 +163,7 @@ hashMappedBy: map
 
 amountToTranslateWithin: aRectangle 
     | delta |
-     delta  := (0 @ 0) .
+     delta  := ( 0  @  0 ) .
     ((( self  left) < ( aRectangle  left)) ifTrue: [( delta  x: (( aRectangle  left) - ( self  left))) .]) .
     ((( self  top) < ( aRectangle  top)) ifTrue: [( delta  y: (( aRectangle  top) - ( self  top))) .]) .
     ((( self  right) > ( aRectangle  right)) ifTrue: [( delta  x: (( aRectangle  right) - ( self  right))) .]) .
@@ -281,7 +281,7 @@ Rectangle class instanceVariableNames: '' !
 
 
 fromUser
-    ^ ( self  fromUser: (1 @ 1)) .
+    ^ ( self  fromUser: ( 1  @  1 )) .
  ! 
 
 fromUser: gridPoint 
@@ -301,9 +301,9 @@ fromUser: gridPoint
 
 fromUserAspectRatio: aspectPoint 
     | rectangle extent ratio |
-    (( Cursor  origin) showWhile: [ rectangle  := (( Sensor  waitButton) extent: (1 @ 1)) .]) .
+    (( Cursor  origin) showWhile: [ rectangle  := (( Sensor  waitButton) extent: ( 1  @  1 )) .]) .
      ratio  := (( aspectPoint  y) / ( aspectPoint  x)) .
-    (( Cursor  corner) showWhile: [( Sensor  cursorPoint: ( rectangle  corner)) .([( Sensor  anyButtonPressed) .] whileTrue: [ extent  := ((( Sensor  cursorPoint) - ( rectangle  origin)) max: (1 @ 1)) .(((( extent  y) * ( aspectPoint  x)) > (( aspectPoint  y) * ( extent  x))) ifTrue: [( extent  x: ((( extent  y) /  ratio ) rounded)) .] ifFalse: [( extent  y: ((( extent  x) *  ratio ) rounded)) .]) .( rectangle  extent:  extent ) .( Display  flash:  rectangle ) .]) .]) .
+    (( Cursor  corner) showWhile: [( Sensor  cursorPoint: ( rectangle  corner)) .([( Sensor  anyButtonPressed) .] whileTrue: [ extent  := ((( Sensor  cursorPoint) - ( rectangle  origin)) max: ( 1  @  1 )) .(((( extent  y) * ( aspectPoint  x)) > (( aspectPoint  y) * ( extent  x))) ifTrue: [( extent  x: ((( extent  y) /  ratio ) rounded)) .] ifFalse: [( extent  y: ((( extent  x) *  ratio ) rounded)) .]) .( rectangle  extent:  extent ) .( Display  flash:  rectangle ) .]) .]) .
     ^  rectangle  .
  ! 
 
@@ -320,7 +320,7 @@ origin: originPoint extent: extentPoint
  ! 
 
 originFromUser: extentPoint 
-    ^ ( self  originFromUser:  extentPoint  grid: (1 @ 1)) .
+    ^ ( self  originFromUser:  extentPoint  grid: ( 1  @  1 )) .
  ! 
 
 originFromUser: extentPoint grid: scaleFactor 

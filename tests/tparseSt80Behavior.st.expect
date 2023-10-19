@@ -36,15 +36,15 @@ format
 
 
 instSize
-    ^ ( format  bitAnd: 255) .
+    ^ ( format  bitAnd:  255 ) .
  ! 
 
 isBits
-    ^ ( format  noMask: -16384) .
+    ^ ( format  noMask:  -16384 ) .
  ! 
 
 isBytes
-    ^ ( format  noMask: 8192) .
+    ^ ( format  noMask:  8192 ) .
  ! 
 
 isFixed
@@ -56,7 +56,7 @@ isPointers
  ! 
 
 isVariable
-    ^ (( format  bitAnd: 4096)  0) .
+    ^ (( format  bitAnd:  4096 )   0 ) .
  ! 
 
 isWords
@@ -82,9 +82,9 @@ copy
 
 printHierarchy
     | aStream index supers |
-     index  := 0 .
-     aStream  := ( WriteStream  on: ( String  new: 16)) .
-    (( self  allDynamicSuperclasses) reverseDo: [ :aClass |( aStream  crtab:  index ) . index  := ( index  + 1) .( aStream  nextPutAll: ( aClass  name)) .( aStream  space) .( aStream  print: ( aClass  instVarNames)) . supers  := ( aClass  superclasses) .((( supers  size) > 1) ifTrue: [( aStream  nextPutAll: '  [also a ') .(( supers  copyFrom: 2 to: ( supers  size)) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .]) .
+     index  :=  0  .
+     aStream  := ( WriteStream  on: ( String  new:  16 )) .
+    (( self  allDynamicSuperclasses) reverseDo: [ :aClass |( aStream  crtab:  index ) . index  := ( index  +  1 ) .( aStream  nextPutAll: ( aClass  name)) .( aStream  space) .( aStream  print: ( aClass  instVarNames)) . supers  := ( aClass  superclasses) .((( supers  size) >  1 ) ifTrue: [( aStream  nextPutAll: '  [also a ') .(( supers  copyFrom:  2  to: ( supers  size)) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .]) .
     ( aStream  cr) .
     ( self  printSubclassesOn:  aStream  callingSuperclass: ( self  dynamicSuperclass) level:  index ) .
     ^ ( aStream  contents) .
@@ -164,7 +164,7 @@ tryCopyingCodeFor: selector
 
 basicNew
     <primitive: 70>
-    (( self  isVariable) ifTrue: [ ^ ( self  basicNew: 0) .]) .
+    (( self  isVariable) ifTrue: [ ^ ( self  basicNew:  0 ) .]) .
     ( self  primitiveFailed) .
  ! 
 
@@ -175,7 +175,7 @@ basicNew: anInteger
 
 new
     <primitive: 70>
-    (( self  isVariable) ifTrue: [ ^ ( self  new: 0) .]) .
+    (( self  isVariable) ifTrue: [ ^ ( self  new:  0 ) .]) .
     ( self  primitiveFailed) .
  ! 
 
@@ -313,7 +313,7 @@ sourceCodeAt: messageSelector
 
 sourceCodeForMethod: method at: messageSelector 
     | newSource index |
-    (( Sensor  leftShiftDown) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [ newSource  := ( method  getSource) .(( newSource    nil ) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [((( newSource  at: ( newSource  size)) isSeparator) ifTrue: [ index  := ( newSource  size) .([((( newSource  at:  index ) isSeparator) and: [( index  > 1) .]) .] whileTrue: [ index  := ( index  - 1) .]) . newSource  := ( newSource  copyFrom: 1 to:  index ) .]) .]) .]) .
+    (( Sensor  leftShiftDown) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [ newSource  := ( method  getSource) .(( newSource    nil ) ifTrue: [ newSource  := ((( self  decompilerClass new) decompile:  messageSelector  in:  self  method:  method ) decompileString) .] ifFalse: [((( newSource  at: ( newSource  size)) isSeparator) ifTrue: [ index  := ( newSource  size) .([((( newSource  at:  index ) isSeparator) and: [( index  >  1 ) .]) .] whileTrue: [ index  := ( index  -  1 ) .]) . newSource  := ( newSource  copyFrom:  1  to:  index ) .]) .]) .]) .
     ^  newSource  .
  ! 
 
@@ -368,17 +368,17 @@ classVarNames
 
 instanceCount
     | count |
-     count  := 0 .
-    ( self  allInstancesDo: [ :x | count  := ( count  + 1) .]) .
+     count  :=  0  .
+    ( self  allInstancesDo: [ :x | count  := ( count  +  1 ) .]) .
     ^  count  .
  ! 
 
 instVarNames
     | mySize superSize |
      mySize  := ( self  instSize) .
-     superSize  := (( superclass    nil ) ifTrue: [0 .] ifFalse: [( superclass  instSize) .]) .
+     superSize  := (( superclass    nil ) ifTrue: [ 0  .] ifFalse: [( superclass  instSize) .]) .
     (( mySize  =  superSize ) ifTrue: [ ^ # .]) .
-    ^ ((( superSize  + 1) to:  mySize ) collect: [ :i |('inst' , ( i  printString)) .]) .
+    ^ ((( superSize  +  1 ) to:  mySize ) collect: [ :i |('inst' , ( i  printString)) .]) .
  ! 
 
 sharedPools
@@ -421,7 +421,7 @@ canUnderstand: selector
  ! 
 
 hasMethods
-    ^ (( methodDict  size) > 0) .
+    ^ (( methodDict  size) >  0 ) .
  ! 
 
 includesSelector: aSymbol 
@@ -459,8 +459,8 @@ whichSelectorsReferTo: literal special: specialFlag byte: specialByte
      who  := ( OrderedCollection  new) .
      methodArray  := ( methodDict  methodArray) .
      arraySize  := ( methodArray  size) .
-     index  := 0 .
-    ([(( index  + 1)   arraySize ) .] whileTrue: [((( methodArray  at:  index )   nil ) ifFalse: [((( method  refersToLiteral:  literal ) or: [( specialFlag  and: [( method  scanFor:  specialByte ) .]) .]) ifTrue: [( who  add: ( methodDict  basicAt:  index )) .]) .]) .]) .
+     index  :=  0  .
+    ([(( index  +  1 )   arraySize ) .] whileTrue: [((( methodArray  at:  index )   nil ) ifFalse: [((( method  refersToLiteral:  literal ) or: [( specialFlag  and: [( method  scanFor:  specialByte ) .]) .]) ifTrue: [( who  add: ( methodDict  basicAt:  index )) .]) .]) .]) .
     ^  who  .
  ! !
 
@@ -496,11 +496,11 @@ compileBroadcastCodeFor: selector
     | implementors strm keywords argNames |
      implementors  := (( self  withAllSuperclasses) select: [ :each |( each  includesSelector:  selector ) .]) .
      argNames  := ( Array  new: ( selector  numArgs)) .
-    (1 to: ( argNames  size) do: [ :i |( argNames  at:  i  put: ('arg' , ( i  printString))) .]) .
-     strm  := ( WriteStream  on: ( String  new: 500)) .
+    ( 1  to: ( argNames  size) do: [ :i |( argNames  at:  i  put: ('arg' , ( i  printString))) .]) .
+     strm  := ( WriteStream  on: ( String  new:  500 )) .
     ( strm  nextPutAll: 'all.') .
-    ((( argNames  size) = 0) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .(1 to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .
-    ( implementors  do: [ :each |( strm  cr ;  nextPutAll:  ;  nextPutAll: 'self ' ;  nextPutAll: ( each  name) ;  nextPut: $.) .((( argNames  size) = 0) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .(1 to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .( strm  nextPut: $.) .]) .
+    ((( argNames  size) =  0 ) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .( 1  to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .
+    ( implementors  do: [ :each |( strm  cr ;  nextPutAll:  ;  nextPutAll: 'self ' ;  nextPutAll: ( each  name) ;  nextPut: $.) .((( argNames  size) =  0 ) ifTrue: [( strm  nextPutAll:  selector ) .] ifFalse: [ keywords  := ( selector  keywords) .( 1  to: ( argNames  size) do: [ :i |( strm  nextPutAll: ( keywords  at:  i ) ;  nextPutAll:  ;  nextPutAll: ( argNames  at:  i ) ;   ) .]) .]) .( strm  nextPut: $.) .]) .
     ( self  compileUnchecked: ( strm  contents)) .
  ! 
 
@@ -512,7 +512,7 @@ compileUnchecked: code
     | selector methodNode |
      methodNode  := (( self  compilerClass new) compile:  code  in:  self  notifying:  nil  ifFail: [ ^  nil  .]) .
      selector  := ( methodNode  selector) .
-    ( self  addSelectorUnchecked:  selector  withMethod: ( methodNode  generate: #(0 0 0 ))) .
+    ( self  addSelectorUnchecked:  selector  withMethod: ( methodNode  generate: #( 0   0   0  ))) .
     ^  selector  .
  ! 
 
@@ -543,7 +543,7 @@ recompile: selector
 recompile: selector from: oldClass 
     | method trailer methodNode |
      method  := ( oldClass  compiledMethodAt:  selector ) .
-     trailer  := (((( method  size) - 2) to: ( method  size)) collect: [ :i |( method  at:  i ) .]) .
+     trailer  := (((( method  size) -  2 ) to: ( method  size)) collect: [ :i |( method  at:  i ) .]) .
      methodNode  := (( self  compilerClass new) compile: ( oldClass  sourceCodeAt:  selector ) in:  self  notifying:  nil  ifFail: []) .
     (( methodNode    nil ) ifTrue: [ ^ ( self  recompile:  selector ) .]) .
     (( selector   ( methodNode  selector)) ifFalse: [( self  error: 'selector changed!!') .]) .
@@ -612,16 +612,16 @@ crossReference
 
 showVariableMenu: generatorBlock collect: valueBlock 
     | eachClass aStream lines count lastLine variables index |
-     aStream  := ( WriteStream  on: ( String  new: 200)) .
+     aStream  := ( WriteStream  on: ( String  new:  200 )) .
      lines  := ( OrderedCollection  new) .
-     count  := 0 .
-     lastLine  := 0 .
+     count  :=  0  .
+     lastLine  :=  0  .
      variables  := ( OrderedCollection  new) .
-    (( self  withAllSuperclasses) reverseDo: [ :eachClass |(( count  =  lastLine ) ifFalse: [( lines  add:  count ) . lastLine  :=  count  .]) .(( generatorBlock  value:  eachClass ) do: [ :var |( aStream  nextPutAll: (( valueBlock  value:  var ) contractTo: 20) ;  variables ) .( variables  addLast:  var ) . count  := ( count  + 1) .]) .]) .
+    (( self  withAllSuperclasses) reverseDo: [ :eachClass |(( count  =  lastLine ) ifFalse: [( lines  add:  count ) . lastLine  :=  count  .]) .(( generatorBlock  value:  eachClass ) do: [ :var |( aStream  nextPutAll: (( valueBlock  value:  var ) contractTo:  20 ) ;  variables ) .( variables  addLast:  var ) . count  := ( count  +  1 ) .]) .]) .
     (( variables  isEmpty) ifTrue: [ ^  nil  .]) .
-    ( aStream  skip: -1) .
+    ( aStream  skip:  -1 ) .
      index  := (( PopUpMenu  labels: ( aStream  contents) lines:  lines ) startUp) .
-    ^ (( index  = 0) ifTrue: [ nil  .] ifFalse: [( variables  at:  index ) .]) .
+    ^ (( index  =  0 ) ifTrue: [ nil  .] ifFalse: [( variables  at:  index ) .]) .
  ! !
 
 !Behavior methodsFor: 'fileIn/Out'!
@@ -675,7 +675,7 @@ conflictCodeFor: sel
     | code parser |
      code  := (( self  dynamicMethodDescriptionAt:  sel ) sourceCode) .
     (( self  parserClass new) parseSelector:  code ) .
-    ^ (( code  copyFrom: 1 to: (( parser  endOfLastToken) min: ( code  size))) , ( String  with: ( Character  cr)) , '	^self conflictingInheritanceError') .
+    ^ (( code  copyFrom:  1  to: (( parser  endOfLastToken) min: ( code  size))) , ( String  with: ( Character  cr)) , '	^self conflictingInheritanceError') .
  ! 
 
 copyMethods
@@ -688,9 +688,9 @@ copyMethods
 
 defaultSelectorForMethod: aMethod 
     | aStream |
-     aStream  := ( WriteStream  on: ( String  new: 16)) .
+     aStream  := ( WriteStream  on: ( String  new:  16 )) .
     ( aStream  nextPutAll: 'unboundMethod') .
-    (1 to: ( aMethod  numArgs) do: [ :i |( aStream  nextPutAll: 'with:') .]) .
+    ( 1  to: ( aMethod  numArgs) do: [ :i |( aStream  nextPutAll: 'with:') .]) .
     ^ ( aStream  contents asSymbol) .
  ! 
 
@@ -700,7 +700,7 @@ flushCache
  ! 
 
 format: nInstVars variable: isVar words: isWords pointers: isPointers 
-     format  := ( nInstVars  + ( isVar  ifTrue: [4096 .] ifFalse: [0 .]) + ( isWords  ifTrue: [8192 .] ifFalse: [0 .]) + ( isPointers  ifTrue: [-16384 .] ifFalse: [0 .])) .
+     format  := ( nInstVars  + ( isVar  ifTrue: [ 4096  .] ifFalse: [ 0  .]) + ( isWords  ifTrue: [ 8192  .] ifFalse: [ 0  .]) + ( isPointers  ifTrue: [ -16384  .] ifFalse: [ 0  .])) .
  ! 
 
 insertClass: aClass selector: selector in: aDictionary 
@@ -715,22 +715,22 @@ printSubclassesOn: aStream callingSuperclass: whichSuper level: level
     ( aStream  nextPutAll: ( self  name)) .
     ( aStream  space ;  print: ( self  instVarNames)) .
      supers  := ( self  superclasses) .
-    ((( supers  size) > 1) ifTrue: [( aStream  nextPutAll: '  [also a') .(( supers  copyWithout:  whichSuper ) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .
+    ((( supers  size) >  1 ) ifTrue: [( aStream  nextPutAll: '  [also a') .(( supers  copyWithout:  whichSuper ) do: [ :s |( aStream  space ;  nextPutAll: ( s  name) ;  print:  ;  print: ( s  allInstVarNames)) .]) .( aStream  nextPut: $]) .]) .
      subs  := ( self  subclasses) .
-    (( self    Class ) ifTrue: [( aStream  crtab: ( level  + 1) ;  nextPutAll: '... all the Metaclasses ...') . subs  := ( subs  reject: [ :sub |( sub  isMeta) .]) .]) .
-    (( subs  asSortedCollection: [ :x :y |(( x  name) < ( y  name)) .]) do: [ :sub |( sub  printSubclassesOn:  aStream  callingSuperclass:  self  level: ( level  + 1)) .]) .
+    (( self    Class ) ifTrue: [( aStream  crtab: ( level  +  1 ) ;  nextPutAll: '... all the Metaclasses ...') . subs  := ( subs  reject: [ :sub |( sub  isMeta) .]) .]) .
+    (( subs  asSortedCollection: [ :x :y |(( x  name) < ( y  name)) .]) do: [ :sub |( sub  printSubclassesOn:  aStream  callingSuperclass:  self  level: ( level  +  1 )) .]) .
  ! 
 
 removeClass: aClass selector: selector in: aDictionary 
     | list |
      list  := (( aDictionary  at:  selector ) copyWithout:  aClass ) .
-    ((( list  size) = 0) ifTrue: [( aDictionary  removeKey:  selector ) .] ifFalse: [( aDictionary  at:  selector  put:  list ) .]) .
+    ((( list  size) =  0 ) ifTrue: [( aDictionary  removeKey:  selector ) .] ifFalse: [( aDictionary  at:  selector  put:  list ) .]) .
  ! 
 
 removeFromInheritanceTable: table 
     | keys list |
      keys  := ( table  keys) .
-    ( keys  do: [ :key | list  := (( table  at:  key ) copyWithout:  self ) .((( list  size) = 0) ifTrue: [( table  removeKey:  key ) .] ifFalse: [( table  at:  key  put:  list ) .]) .]) .
+    ( keys  do: [ :key | list  := (( table  at:  key ) copyWithout:  self ) .((( list  size) =  0 ) ifTrue: [( table  removeKey:  key ) .] ifFalse: [( table  at:  key  put:  list ) .]) .]) .
  ! 
 
 removeFromInheritanceTables
@@ -755,11 +755,11 @@ unmovedVarsFrom: sup
     | allInstVarNames supNames |
      allInstVarNames  := ( self  allInstVarNames) .
      supNames  := ( sup  allInstVarNames) .
-    ^ ((1 to: ( sup  instSize)) collect: [ :i |(( supNames  at:  i ) = ( allInstVarNames  at:  i )) .]) .
+    ^ (( 1  to: ( sup  instSize)) collect: [ :i |(( supNames  at:  i ) = ( allInstVarNames  at:  i )) .]) .
  ! 
 
 updateInheritanceTable: table oldSelf: oldSelf 
-    ( table  do: [ :array |(1 to: ( array  size) do: [ :i |((( array  at:  i )   oldSelf ) ifTrue: [( array  at:  i  put:  self ) .]) .]) .]) .
+    ( table  do: [ :array |( 1  to: ( array  size) do: [ :i |((( array  at:  i )   oldSelf ) ifTrue: [( array  at:  i  put:  self ) .]) .]) .]) .
  ! 
 
 updateInheritanceTables: oldSelf 

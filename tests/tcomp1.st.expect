@@ -25,7 +25,7 @@ centerx
     <124> returnTop
     "
     | a b |
-    ^ ( origin  +  corner  / (2 +  a  +  b )) .
+    ^ ( origin  +  corner  / ( 2  +  a  +  b )) .
  ! 
 
 center
@@ -37,7 +37,7 @@ center
     <185> send: /
     <124> returnTop
     "
-    ^ ( origin  +  corner  / 2) .
+    ^ ( origin  +  corner  /  2 ) .
  ! 
 
 center: b 
@@ -50,7 +50,7 @@ center: b
     <124> returnTop
     "
     | a |
-    ^ ( origin  + ( corner  / 2)) .
+    ^ ( origin  + ( corner  /  2 )) .
  ! !
 
 "= = = == = "!

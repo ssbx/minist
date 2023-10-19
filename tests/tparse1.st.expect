@@ -68,7 +68,7 @@ blocks
 
 parentheses
      a  := (( a  +  b ) value) .
-    ^ ((( a  +  c ) b) + 3) .
+    ^ ((( a  +  c ) b) +  3 ) .
     ( d  ifTrue: [( areas  add: ( origin  corner: (( corner  x) @ ( aRectangle  origin y)))) .]) .
  ! 
 
@@ -76,11 +76,11 @@ colonvar
      a  := [ :colonvar |( a  b) .( colonvar  +  x ) .] .
      a  := [ :colonvar | |  a  b  c  | ( a  b) .( colonvar  +  x ) .] .
      a  := [ :vx :vy :vyy | |  a  b  c  | ( a  b) .( colonvar  +  x ) .] .
-    (( v  + 2) ifFalse: ([ ^ ( a  b) .] value)) .
+    (( v  +  2 ) ifFalse: ([ ^ ( a  b) .] value)) .
  ! 
 
 numbers
-     a  := ( b  + 2 * 36 - 2 + -3) .
+     a  := ( b  +  2  *  36  -  2  +  -3 ) .
     (( a  +  b ) - ( b  +  a )) .
  ! 
 
@@ -95,7 +95,7 @@ strunit
  ! 
 
 chars
-    ($a at: ($b v) put: ($c + 3)) .
+    ($a at: ($b v) put: ($c +  3 )) .
     ( this  w: $( w: $) w: $+ w: ${ w: $- w: $\ w: $/ w: $_ w: $@ w: $[ w: $]) .
     ($( printOn:  aStream  with: $+) .
  ! 
