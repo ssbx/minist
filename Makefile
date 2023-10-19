@@ -32,7 +32,7 @@ scan.yy.c scan.yy.h: scan.l parse.tab.h
 
 include depends.mk
 
-.PHONY: t run clean depends check all
+.PHONY: t run clean depends check all install
 all:: run
 
 run: minist-img-gen
@@ -47,3 +47,5 @@ depends: scan.yy.h parse.tab.h
 check: minist-img-gen
 	./tests/run.sh
 
+install: minist-img-gen
+	install -m755 minist-img-gen $(bindir)/minist-img-gen
