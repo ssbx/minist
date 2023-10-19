@@ -18,4 +18,11 @@ at: y
     | a b |
     corner := origin := a := b := (y * 2 + 2) !
 
+ast: x
+    x call: [ :a |
+        | a b c |
+        a + b + c .
+        a := b * c .
+        ^ a .
+    ] !
 !

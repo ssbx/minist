@@ -2,28 +2,6 @@
 #include "bytecodes.h"
 #include <stdio.h>
 
-
-
-/*
-static char * str_from_enum(int e) {
-    switch (e) {
-        case ST_ID: return "ST_ID";
-        case ST_UNIT: return "ST_UNIT";
-        case ST_BINARY: return "ST_BINARY";
-        case ST_UNARY: return "ST_UNARY";
-        case ST_KEYWORD: return "ST_KEYWORD";
-        case ST_BLOCK: return "ST_BLOCK";
-        case ST_STRING: return "ST_STRING";
-        case ST_CHAR: return "ST_CHAR";
-        case ST_INT: return "ST_INT";
-        case ST_SYMBOL: return "ST_SYMBOL";
-        case ST_ARRAY: return "ST_ARRAY";
-        case ST_ARRAYCONST: return "ST_ARRAYCONST";
-    }
-    return "NOT KNOWN";
-}
-*/
-
 static void print_eval(struct ExprUnit *e);
 static void print_cas(struct Cascade *c) {
     printf( " ; ");
@@ -49,7 +27,11 @@ static void print_cas(struct Cascade *c) {
     }
 }
 
-/* what ois this?? TODO remove print_exp */
+/* TODO this share the same thing as the method body printing:
+ * - temps
+ * - expressions with assignment
+ * - returns
+ */
 static void print_exp(struct ExprUnit* exp) {
     while (exp) {
         if (exp->returns) printf( " ^ ");
