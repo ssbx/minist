@@ -465,7 +465,7 @@ superMethodDescriptionAt: selector
 	| descr result |
 	result _ MethodDescription makeMethodNotImplemented.
 	self superclasses do:
-		[:each | descr _ each methodDescriptionAt: selector.
+		[: each | descr _ each methodDescriptionAt: selector.
 		 descr isMethodNotImplemented ifFalse:
 		 	[result isMethodNotImplemented
 				ifTrue: [result _ descr]

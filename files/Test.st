@@ -1,6 +1,6 @@
 Object subclass: #Rectangle
-	instanceVariableNames: 'origin corner '
-	classVariableNames: ''
+	instanceVariableNames: 'origin corner ab    d  d fq dsf '
+	classVariableNames: 'Ab Ec Dc'
 	poolDictionaries: ''
 	category: 'Graphics-Primitives'!
 

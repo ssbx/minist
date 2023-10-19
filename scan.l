@@ -59,6 +59,7 @@ KW    {ID}":"
 
 "'"  {
     int stmax = st_string_max;
+
     st_string = malloc(stmax);
 
     int pos = 0;

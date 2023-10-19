@@ -377,7 +377,7 @@ unit: id | literals | block | '(' expr1 ')' { $$ = $2;}
 literals: integer | string | charconst | symconst | arrayconst
 
 integer:   INTEGER    { $$ = mkIntExpr(strdup2(yytext)); }
-string:    STRING     { $$ = mkStringExpr(st_string); }
+string:    STRING     { $$ = mkStringExpr(st_string); st_string = NULL; }
 charconst: CHARCONST  { $$ = mkCharExpr(strdup2(yytext)); }
 symconst:  SYMCONST   { $$ = mkSymbolExpr(strdup2(yytext)); }
 keyselsym: ARRAYSYM   { $$ = mkSymbolExpr(strdup2(yytext)); }
@@ -788,25 +788,24 @@ mkFile(
     return f;
 }
 
+#define TOKMAX 100
 int tokenizeStString(char *str, char ***dst)
 {
-    int tsize = 0;
+    char **tokens = malloc(sizeof(char*) * TOKMAX);
     int tnum  = 0;
-    char **tokens = NULL;
-    char  *tok;
+    char *tok;
     tok = strtok(str, " ");
     while (tok) {
-        if (tsize == tnum) {
-            tokens = realloc(tokens, sizeof(char*) + 10);
-            tsize += 10;
-        }
+        assert(tnum != TOKMAX);
         tokens[tnum++] = strdup2(tok);
         tok = strtok(NULL, " ");
     }
-    *dst = tokens;
-    return tnum;
 
+    *dst = tokens;
+
+    return tnum;
 }
+
 
 struct ClassHeader*
 mkClassHeader(
@@ -819,7 +818,7 @@ mkClassHeader(
 {
     struct ClassHeader *h = malloc(sizeof(struct ClassHeader));
 
-    assert((super->type    == ST_ID) && (!super->next));
+    assert((super->type == ST_ID) && (!super->next));
     h->super = strdup2(super->u.id.name);
     freeExprUnit(super);
 

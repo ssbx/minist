@@ -35,10 +35,8 @@ include depends.mk
 .PHONY: t run clean depends check all
 all:: run
 
-t: minist-img-gen
-	./minist-img-gen -p files/Test.st
 run: minist-img-gen
-	./minist-img-gen -p files/SR.st
+	./minist-img-gen -p files/Test.st
 
 clean:
 	$(RM) minist-img-gen *.o parse.tab.* scan.yy.*
