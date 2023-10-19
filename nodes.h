@@ -24,8 +24,6 @@ struct UnaryMsg;
 struct BinaryMsg;
 struct Cascade;
 
-void nodes_freeClassFile(struct ClassFile*);
-
 /*
  * Represent one file of a smalltalk class.
  */

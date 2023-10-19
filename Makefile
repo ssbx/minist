@@ -16,7 +16,7 @@ BISONFLAGS = --color -Wall -Wother -Wcounterexamples
 FLEXFLAGS  = --outfile=scan.yy.c --header-file=scan.yy.h
 
 OBJS  = parse.tab.o scan.yy.o comp.o pprint.o bytecodes.o \
-        mem.o nodes.o minist-img-gen.o
+        mem.o minist-img-gen.o
 
 minist-img-gen: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o minist-img-gen
