@@ -8,6 +8,8 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
+" bytecodes page 596 "
+" merge page 546 "
 
 merge: aRectangle
     | minPoint maxPoint |

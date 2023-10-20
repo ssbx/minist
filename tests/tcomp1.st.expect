@@ -12,6 +12,8 @@ Rectangle comment: 'comment'!
 
 
 centerx
+    | a b |
+    ^ ( origin  +  corner  / ( 2  +  a  +  b )) .
     "
     <0> pushRcvr: 0
     <1> pushRcvr: 1
@@ -25,11 +27,10 @@ centerx
     <124> returnTop
     Literal Frame:
     "
-    | a b |
-    ^ ( origin  +  corner  / ( 2  +  a  +  b )) .
  ! 
 
 center
+    ^ ( origin  +  corner  /  2 ) .
     "
     <0> pushRcvr: 0
     <1> pushRcvr: 1
@@ -39,10 +40,11 @@ center
     <124> returnTop
     Literal Frame:
     "
-    ^ ( origin  +  corner  /  2 ) .
  ! 
 
 center: b 
+    | a |
+    ^ ( origin  + ( corner  /  2 )) .
     "
     <0> pushRcvr: 0
     <1> pushRcvr: 1
@@ -52,8 +54,6 @@ center: b
     <124> returnTop
     Literal Frame:
     "
-    | a |
-    ^ ( origin  + ( corner  /  2 )) .
  ! !
 
 "= = = == = "!

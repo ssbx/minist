@@ -12,6 +12,7 @@ Rectangle comment: 'comment'!
 
 
 extent: newExtent 
+     corner  := ( origin  +  newExtent ) .
     "
     <0> pushRcvr: 0
     <16> pushTemp: 0
@@ -20,7 +21,6 @@ extent: newExtent
     <120> returnReceiver
     Literal Frame:
     "
-     corner  := ( origin  +  newExtent ) .
  ! !
 
 

@@ -12,6 +12,7 @@ Rectangle comment: 'comment'!
 
 
 + anInteger
+    ^ ( origin  +  anInteger ) .
     "
     <0> pushRcvr: 0
     <16> pushTemp: 0
@@ -19,28 +20,28 @@ Rectangle comment: 'comment'!
     <124> returnTop
     Literal Frame:
     "
-    ^ ( origin  +  anInteger ) .
  ! 
 
 + anInteger2
+    ^  origin  .
     "
     <0> pushRcvr: 0
     <124> returnTop
     Literal Frame:
     "
-    ^  origin  .
  ! 
 
 + anInteger3
+    ^  anInteger3  .
     "
     <16> pushTemp: 0
     <124> returnTop
     Literal Frame:
     "
-    ^  anInteger3  .
  ! 
 
 mult: x by: y and: z 
+    ^ ( x  *  y  *  z ) .
     "
     <16> pushTemp: 0
     <17> pushTemp: 1
@@ -50,10 +51,10 @@ mult: x by: y and: z
     <124> returnTop
     Literal Frame:
     "
-    ^ ( x  *  y  *  z ) .
  ! 
 
 unarytest
+    ^ ( origin  msg) .
     "
     <0> pushRcvr: 0
     <208> sendLiteralSelectorNoarg: 0
@@ -61,10 +62,10 @@ unarytest
     Literal Frame:
         msg
     "
-    ^ ( origin  msg) .
  ! 
 
 center
+    ^ ( origin  +  corner  /  2 ) .
     "
     <0> pushRcvr: 0
     <1> pushRcvr: 1
@@ -74,10 +75,10 @@ center
     <124> returnTop
     Literal Frame:
     "
-    ^ ( origin  +  corner  /  2 ) .
  ! 
 
 extent: newExtent 
+     corner  := ( origin  +  newExtent ) .
     "
     <0> pushRcvr: 0
     <16> pushTemp: 0
@@ -86,10 +87,10 @@ extent: newExtent
     <120> returnReceiver
     Literal Frame:
     "
-     corner  := ( origin  +  newExtent ) .
  ! 
 
 extent: newExtent 
+     origin  := ( origin  +  newExtent ) .
     "
     <0> pushRcvr: 0
     <16> pushTemp: 0
@@ -98,10 +99,11 @@ extent: newExtent
     <120> returnReceiver
     Literal Frame:
     "
-     origin  := ( origin  +  newExtent ) .
  ! 
 
 + anInteger4
+    | tmpx tmpy |
+     tmpx  := ( origin  *  tmpx  *  tmpy  *  anInteger4 ) .
     "
     <0> pushRcvr: 0
     <17> pushTemp: 1
@@ -114,8 +116,6 @@ extent: newExtent
     <120> returnReceiver
     Literal Frame:
     "
-    | tmpx tmpy |
-     tmpx  := ( origin  *  tmpx  *  tmpy  *  anInteger4 ) .
  ! !
 
 

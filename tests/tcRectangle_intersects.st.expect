@@ -12,6 +12,7 @@ Rectangle comment: 'comment'!
 
 
 intersects: aRectangle 
+    ^ (( origin  max: ( aRectangle  origin)) < ( corner  min: ( aRectangle  corner))) .
     "
     <0> pushRcvr: 0
     <16> pushTemp: 0
@@ -29,7 +30,6 @@ intersects: aRectangle
         min:
         corner
     "
-    ^ (( origin  max: ( aRectangle  origin)) < ( corner  min: ( aRectangle  corner))) .
  ! !
 
 

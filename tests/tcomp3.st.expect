@@ -12,6 +12,8 @@ Rectangle comment: 'comment'!
 
 
 at: y 
+    | a b |
+     b  :=  a  :=  origin  :=  corner  := ( y  *  2  +  2 ) .
     "
     <16> pushTemp: 0
     <119> pushConstant: 2
@@ -28,8 +30,6 @@ at: y
     <120> returnReceiver
     Literal Frame:
     "
-    | a b |
-     b  :=  a  :=  origin  :=  corner  := ( y  *  2  +  2 ) .
  ! !
 
 
