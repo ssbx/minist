@@ -23,6 +23,7 @@ centerx
     <176> send: +
     <185> send: /
     <124> returnTop
+    Literal Frame:
     "
     | a b |
     ^ ( origin  +  corner  / ( 2  +  a  +  b )) .
@@ -36,6 +37,7 @@ center
     <119> pushConstant: 2
     <185> send: /
     <124> returnTop
+    Literal Frame:
     "
     ^ ( origin  +  corner  /  2 ) .
  ! 
@@ -48,6 +50,7 @@ center: b
     <185> send: /
     <176> send: +
     <124> returnTop
+    Literal Frame:
     "
     | a |
     ^ ( origin  + ( corner  /  2 )) .

@@ -106,6 +106,10 @@ struct Method {
     int            bytecount;
     unsigned char *bytecodes;
 
+    char         **literal_frame;
+    int            literal_frame_size;
+    int            literal_frame_count;
+
     struct Method *next;
 };
 

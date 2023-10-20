@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "nodes.h"
+#include "utils.h"
 
 extern int yylineno;
 int  yylex();
@@ -14,13 +15,6 @@ extern char* yytext;
 extern char* st_string;
 extern int st_op;
 extern char *fname;
-
-char *strdup2(const char *str) {
-    size_t len = strlen(str) + 1;
-    char  *new = malloc(len);
-    memcpy(new, str, len);
-    return new;
-}
 
 struct ClassFile* parsed_file = NULL;
 
@@ -879,6 +873,9 @@ mkMethod(
     m->buffsize  = 0;
     m->bytecount = 0;
     m->bytecodes = NULL;
+    m->literal_frame_size = 0;
+    m->literal_frame_count = 0;
+    m->literal_frame = NULL;
     m->buffsize = 0;
     m->prim = prim;
     m->temps = t;

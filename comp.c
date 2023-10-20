@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "comp.h"
+#include "utils.h"
 #include "bytecodes.h"
 #include "parse.tab.h"
 
@@ -28,7 +29,8 @@ static int  getInstvars(struct ClassHeader*, char ***);
 static void decodeExpr(struct Method*, struct ExprUnit* e, struct MethodCompileInfo info);
 static void compileMethod(struct Method*, struct MethodCompileInfo);
 static void addByteToMethod(unsigned char, struct Method*);
-
+static int getLiteralIndex(char*, struct Method*);
+static int addLiteralToMethod(char*,struct Method*);
 
 void compiler_compile(struct ClassFile *cf)
 {
@@ -60,6 +62,11 @@ static void compileMethod(
     method->bytecount = 0;
     method->buffsize  = INITIAL_BUFF_SIZE;
     assert(method->bytecodes);
+
+    method->literal_frame = malloc(sizeof(char*) * INITIAL_BUFF_SIZE);
+    method->literal_frame_size = INITIAL_BUFF_SIZE;
+    method->literal_frame_count = 0;
+    assert(method->literal_frame);
 
     if (info.temps) free(info.temps);
     info.temps    = NULL;
@@ -108,6 +115,9 @@ static void decodeExpr(
         struct ExprUnit         *expr,
         struct MethodCompileInfo info)
 {
+    int kargc;
+    struct KeywordMsg *kmsg;
+    int literal_index;
     struct BinaryMsg *binmsg;
     struct Val val;
     unsigned char code;
@@ -145,6 +155,35 @@ static void decodeExpr(
                 binmsg = binmsg->next;
             }
             break;
+        case ST_UNARY:
+            // while unarymsg {
+            literal_index = addLiteralToMethod(expr->u.unary.msgs->msg, method);
+            // }
+            decodeExpr(method, expr->u.unary.receiver, info);
+            code = bytecodes_getCodeFor(SEND_LITERAL_NOARG, literal_index);
+            addByteToMethod(code, method);
+
+            break;
+        case ST_KEYWORD:
+            // while keyword {
+            literal_index = addLiteralToMethod(expr->u.keyword.msgs->key, method);
+            // }
+
+            decodeExpr(method, expr->u.keyword.receiver, info);
+            decodeExpr(method, expr->u.keyword.msgs->arg, info);
+
+            kargc = 0;
+            kmsg = expr->u.keyword.msgs;
+            while (kmsg) {
+                kargc++;
+                kmsg =kmsg->next;
+            }
+            if (kargc == 1) {
+                literal_index = getLiteralIndex(expr->u.keyword.msgs->key, method);
+                code = bytecodes_getCodeFor(SEND_LITERAL_1ARG, literal_index);
+                addByteToMethod(code, method);
+            }
+            break;
     }
 
     if (expr->assignsTo) {
@@ -158,12 +197,12 @@ static void decodeExpr(
             if (val.type == VALIS_TEMP) {
                 code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
                 addByteToMethod(code, method);
-                // if e->next
+                // if e->next TODO
                 code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
             } else { // VALIS_RCVR
                 code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
                 addByteToMethod(code, method);
-                // if e->next
+                // if e->next TODO
                 code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
             }
             if (e->next)
@@ -223,9 +262,39 @@ static int getTemps(struct Method* m, char*** dest) {
 }
 
 static int getInstvars(struct ClassHeader *h, char ***v) {
-    /* todo recursive super too */
+    /* TODO recursive super too */
     *v = h->instsVarNames;
     return h->instsVarNamesCount;
+}
+
+static int
+addLiteralToMethod(char* literal, struct Method* method)
+{
+    int ret;
+    if (method->literal_frame_count == method->literal_frame_size) {
+        method->literal_frame =
+            malloc(sizeof(char*) * 2 * method->literal_frame_size);
+        assert(method->literal_frame);
+        method->literal_frame_size *= 2;
+    }
+
+    for (int i = 0; i < method->literal_frame_count; i++) {
+        /* allready present */
+        if (strcmp(method->literal_frame[i], literal) == 0)
+            return i;
+    }
+    ret = method->literal_frame_count;
+    method->literal_frame[method->literal_frame_count++] = strdup2(literal);
+    return ret;
+}
+
+static int getLiteralIndex(char*lit, struct Method*m)
+{
+    for (int i = 0; i < m->literal_frame_count; i++) {
+        if (strcmp(lit, m->literal_frame[i]) == 0) return i;
+    }
+    assert(0 == 1);
+    return -1;
 }
 
 static void addByteToMethod(
@@ -235,6 +304,7 @@ static void addByteToMethod(
     if (method->bytecount == method->buffsize) {
         method->bytecodes = realloc(
                 method->bytecodes, sizeof(char) * method->buffsize * 2);
+        assert(method->bytecodes);
     }
 
     method->bytecodes[method->bytecount++] = byte;

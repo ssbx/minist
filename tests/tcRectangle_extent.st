@@ -9,10 +9,7 @@ Rectangle comment: 'comment'!
 !Rectangle methodsFor: 'test'!
 
 
-merge: aRectangle
-    | minPoint maxPoint |
-    minPoint := origin min: aRectangle origin .
-    maxPoint := corner max: aRectangle corner . !
-    "^ Rectangle origin: minPoint corner: maxPoint !"
+extent: newExtent
+    corner := origin + newExtent !
 
 !

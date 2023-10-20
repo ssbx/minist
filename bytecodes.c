@@ -66,6 +66,15 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             if (val == ) return 191; /bitor
             */
             break;
+        case SEND_LITERAL_NOARG:
+            /* 208 - 223 */
+            assert(val < 16);
+            return 208 + val;
+        case SEND_LITERAL_1ARG:
+            /* 224 - 239 */
+            assert(val < 16);
+            return 224 + val;
+
     }
     return 138; // unused
 }
@@ -102,10 +111,16 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 107) return "popAndStoreTemp: 3";
     if (code == 108) return "popAndStoreTemp: 4";
     if (code == 109) return "popAndStoreTemp: 5";
+    if (code == 116) return "pushConstant: -1";
+    if (code == 117) return "pushConstant: 0";
+    if (code == 118) return "pushConstant: 1";
+    if (code == 119) return "pushConstant: 2";
     if (code == 120) return "returnReceiver";
     if (code == 121) return "returnTrue";
     if (code == 122) return "returnFalse";
     if (code == 123) return "returnNil";
+    if (code == 124) return "returnTop";
+    if (code == 138) return "!wrong bytecode";
     if (code == 176) return "send: +";
     if (code == 177) return "send: -";
     if (code == 178) return "send: <";
@@ -117,12 +132,42 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 184) return "send: *";
     if (code == 185) return "send: /";
     if (code == 186) return "send: //";
-    if (code == 116) return "pushConstant: -1";
-    if (code == 117) return "pushConstant: 0";
-    if (code == 118) return "pushConstant: 1";
-    if (code == 119) return "pushConstant: 2";
-    if (code == 124) return "returnTop";
-    if (code == 138) return "!wrong bytecode";
+    if (code == 208) return "sendLiteralSelectorNoarg: 0";
+    if (code == 209) return "sendLiteralSelectorNoarg: 1";
+    if (code == 210) return "sendLiteralSelectorNoarg: 2";
+    if (code == 211) return "sendLiteralSelectorNoarg: 3";
+    if (code == 212) return "sendLiteralSelectorNoarg: 4";
+    if (code == 213) return "sendLiteralSelectorNoarg: 5";
+    if (code == 214) return "sendLiteralSelectorNoarg: 6";
+    if (code == 215) return "sendLiteralSelectorNoarg: 7";
+    if (code == 216) return "sendLiteralSelectorNoarg: 8";
+    if (code == 217) return "sendLiteralSelectorNoarg: 9";
+    if (code == 218) return "sendLiteralSelectorNoarg: 10";
+    if (code == 219) return "sendLiteralSelectorNoarg: 11";
+    if (code == 220) return "sendLiteralSelectorNoarg: 12";
+    if (code == 221) return "sendLiteralSelectorNoarg: 13";
+    if (code == 222) return "sendLiteralSelectorNoarg: 14";
+    if (code == 223) return "sendLiteralSelectorNoarg: 15";
+
+    if (code == 224) return "sendLiteralSelector1arg: 0";
+    if (code == 225) return "sendLiteralSelector1arg: 1";
+    if (code == 226) return "sendLiteralSelector1arg: 2";
+    if (code == 227) return "sendLiteralSelector1arg: 3";
+    if (code == 228) return "sendLiteralSelector1arg: 4";
+    if (code == 229) return "sendLiteralSelector1arg: 5";
+    if (code == 230) return "sendLiteralSelector1arg: 6";
+    if (code == 231) return "sendLiteralSelector1arg: 7";
+    if (code == 232) return "sendLiteralSelector1arg: 8";
+    if (code == 233) return "sendLiteralSelector1arg: 9";
+    if (code == 234) return "sendLiteralSelector1arg: 10";
+    if (code == 235) return "sendLiteralSelector1arg: 11";
+    if (code == 236) return "sendLiteralSelector1arg: 12";
+    if (code == 237) return "sendLiteralSelector1arg: 13";
+    if (code == 238) return "sendLiteralSelector1arg: 14";
+    if (code == 239) return "sendLiteralSelector1arg: 15";
+
+
+
     return "unknwon bytecode";
 }
 

@@ -1,0 +1,35 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+intersects: aRectangle 
+    "
+    <0> pushRcvr: 0
+    <16> pushTemp: 0
+    <209> sendLiteralSelectorNoarg: 1
+    <224> sendLiteralSelector1arg: 0
+    <1> pushRcvr: 1
+    <16> pushTemp: 0
+    <211> sendLiteralSelectorNoarg: 3
+    <226> sendLiteralSelector1arg: 2
+    <178> send: <
+    <124> returnTop
+    Literal Frame:
+        max:
+        origin
+        min:
+        corner
+    "
+    ^ (( origin  max: ( aRectangle  origin)) < ( corner  min: ( aRectangle  corner))) .
+ ! !
+
+

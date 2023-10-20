@@ -15,7 +15,7 @@ CFLAGS     = -std=c99 -g -Wall -Wextra -Wpedantic
 BISONFLAGS = --color -Wall -Wother -Wcounterexamples
 FLEXFLAGS  = --outfile=scan.yy.c --header-file=scan.yy.h
 
-OBJS  = parse.tab.o scan.yy.o comp.o pprint.o bytecodes.o \
+OBJS  = parse.tab.o scan.yy.o comp.o pprint.o bytecodes.o utils.o \
         mem.o minist-img-gen.o
 
 minist-img-gen: $(OBJS)

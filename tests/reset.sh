@@ -5,7 +5,7 @@
 #
 # reset
 #
-for i in $(ls *.st.expect); do
-    mv $i.out $i
+for i in $(ls *.st); do
+    mv $i.expect.out $i.expect
 done
 

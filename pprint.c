@@ -191,6 +191,12 @@ static void print_method(struct Method* m) {
         for (int i = 0; i < m->bytecount; i++) {
             printf("    <%i> %s\n", m->bytecodes[i], bytecodes_getBytecodeDescription(m->bytecodes[i]));
         }
+        if (m->literal_frame) {
+            printf("    Literal Frame:\n");
+            for (int i = 0; i < m->literal_frame_count; i++) {
+                printf("        %s\n", m->literal_frame[i]);
+            }
+        }
         printf("    \"\n");
     }
 
