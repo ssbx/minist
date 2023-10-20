@@ -8,7 +8,11 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
-unarychain
-    ^ Rectangle at: origin new getX transform !
+" page 550 "
+
+includesPoint: aPoint
+    origin <= aPoint
+        ifTrue:  [ ^ aPoint < corner ]
+        ifFalse: [ ^ false ] !
 
 !

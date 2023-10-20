@@ -1,5 +1,5 @@
 Object subclass: #Rectangle
-	instanceVariableNames: 'origin corner'
+	instanceVariableNames: 'origin corner shade'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Graphics-Primitives'!
@@ -8,7 +8,9 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
-unarychain
-    ^ Rectangle at: origin new getX transform !
+" page 562 "
+
+intersect: aRectangle
+    ^ (super intersect: aRectangle) shade: shade !
 
 !

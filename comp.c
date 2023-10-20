@@ -24,15 +24,15 @@ struct Val {
     int type;
     int index;
 };
+
+struct Val getVal(char*, struct MethodCompileInfo , struct Method*);
 static int  getTemps(struct Method*, char***);
-static int  getInstvars(struct ClassHeader*, char ***);
-static void decodeExpr(struct Method*, struct ExprUnit* e, struct MethodCompileInfo info);
+static void encodeExpr(struct Method*, struct ExprUnit* e, struct MethodCompileInfo info);
 static void compileMethod(struct Method*, struct MethodCompileInfo);
 static void addByteToMethod(unsigned char, struct Method*);
-static int getLiteralIndex(char*, struct Method*);
 enum {LIT_SELECTOR, LIT_ASSOC};
-static int addLiteralToMethod(int,char*,struct Method*);
-static int addLiteralKwToMethod(struct KeywordMsg *msgs, struct Method *method);
+static int getLiteral(int,char*,struct Method*);
+static int getLiteralKw(struct KeywordMsg *msgs, struct Method *method);
 
 void compiler_compile(struct ClassFile *cf)
 {
@@ -40,9 +40,10 @@ void compiler_compile(struct ClassFile *cf)
     struct Method           *method;
     struct MethodCompileInfo info;
 
-    info.numInstVars = getInstvars(cf->header, &info.instvars);
-    info.temps = NULL;
-    info.numTemps = 0;
+    info.numInstVars = cf->header->instsVarNamesCount;
+    info.instvars    = cf->header->instsVarNames;
+    info.temps       = NULL;
+    info.numTemps    = 0;
 
     cat = cf->categories;
     while (cat) {
@@ -77,9 +78,10 @@ static void compileMethod(
 
     struct ExprUnit *expr = method->exprs;
     while (expr) {
-        decodeExpr(method, expr, info);
+        encodeExpr(method, expr, info);
         expr = expr->next;
     }
+
     /* if no return, add bytecode 120 */
     expr = method->exprs;
     while (expr->next) expr = expr->next;
@@ -88,33 +90,10 @@ static void compileMethod(
     }
 }
 
-struct Val
-getVal(char* varname, struct MethodCompileInfo info, struct Method* m) {
-    struct Val p;
-    for (int i = 0; i < info.numTemps; i++) {
-        if (strcmp(varname, info.temps[i]) == 0) {
-            p.index = i;
-            p.type = VALIS_TEMP;
-            return p;
-        }
-    }
-
-    for (int i = 0; i < info.numInstVars; i++) {
-        if (strcmp(varname, info.instvars[i]) == 0) {
-            p.index = i;
-            p.type = VALIS_RCVR;
-            return p;
-        }
-    }
-
-    /* if not found must be an assoc */
-
-    p.type = VALIS_ASSOC;
-    p.index = addLiteralToMethod(LIT_ASSOC, varname, m);
-    return p;
-}
-
-static void decodeExpr(
+/*
+ * The big boy
+ */
+static void encodeExpr(
         struct Method           *method,
         struct ExprUnit         *expr,
         struct MethodCompileInfo info)
@@ -139,7 +118,6 @@ static void decodeExpr(
                 code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
                 addByteToMethod(code, method);
             }
-
             break;
         case ST_INT:
             code = bytecodes_getCodeFor(PUSH_CONSTANT, atoi(expr->u.string.value));
@@ -151,21 +129,21 @@ static void decodeExpr(
             break;
 
         case ST_BINARY:
-            decodeExpr(method, expr->u.binary.receiver, info);
+            encodeExpr(method, expr->u.binary.receiver, info);
             binmsg = expr->u.binary.msgs;
             while (binmsg) {
-                decodeExpr(method, binmsg->arg, info);
+                encodeExpr(method, binmsg->arg, info);
                 code = bytecodes_getCodeFor(SEND_BIN_MSG, binmsg->op);
                 addByteToMethod(code, method);
                 binmsg = binmsg->next;
             }
             break;
         case ST_UNARY:
-            decodeExpr(method, expr->u.unary.receiver, info);
+            encodeExpr(method, expr->u.unary.receiver, info);
 
             umsg = expr->u.unary.msgs;
             while (umsg) {
-                literal_index = addLiteralToMethod(LIT_SELECTOR, umsg->msg, method);
+                literal_index = getLiteral(LIT_SELECTOR, umsg->msg, method);
                 code = bytecodes_getCodeFor(SEND_LITERAL_NOARG, literal_index);
                 addByteToMethod(code, method);
                 umsg = umsg->next;
@@ -173,15 +151,15 @@ static void decodeExpr(
 
             break;
         case ST_KEYWORD:
-            literal_index = addLiteralKwToMethod(expr->u.keyword.msgs, method);
+            literal_index = getLiteralKw(expr->u.keyword.msgs, method);
 
-            decodeExpr(method, expr->u.keyword.receiver, info);
+            encodeExpr(method, expr->u.keyword.receiver, info);
 
             kargc = 0;
             kmsg = expr->u.keyword.msgs;
             while (kmsg) {
                 kargc++;
-                decodeExpr(method, kmsg->arg, info);
+                encodeExpr(method, kmsg->arg, info);
                 kmsg =kmsg->next;
             }
             if (kargc == 1) {
@@ -199,22 +177,25 @@ static void decodeExpr(
         while (e) {
             val = getVal(e->u.id.name, info, method);
             if (val.type == VALIS_ASSOC) {
-                fprintf(stderr, "can not find %s\n", expr->u.id.name);
-                exit(1);
-            }
-            if (val.type == VALIS_TEMP) {
+                // TODO
+                //code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
+                //addByteToMethod(code, method);
+                //code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
+            } else if (val.type == VALIS_TEMP) {
                 code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
                 addByteToMethod(code, method);
-                // if e->next TODO
                 code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
-            } else { // VALIS_RCVR
+            } else if (val.type == VALIS_RCVR) {
                 code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
                 addByteToMethod(code, method);
-                // if e->next TODO
                 code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
             }
+
+            /* if there is a next assignment, push my self so the next
+             * can POP_STORE */
             if (e->next)
                 addByteToMethod(code, method);
+
             e = e->next;
         }
     }
@@ -222,31 +203,18 @@ static void decodeExpr(
     if (expr->returns) addByteToMethod(124, method);
 }
 
-static int addLiteralKwToMethod(struct KeywordMsg *msgs, struct Method *method)
-{
-    struct KeywordMsg *m = msgs;
-    int slen = 0;
-    char *str;
-    while(m) {
-        slen += strlen(m->key);
-        m = m->next;
-    }
-    str = malloc(sizeof(char) * slen + 1);
-    m = msgs;
-    int index = 0;
-    while (m) {
-        memcpy(&str[index], m->key, strlen(m->key));
-        index += strlen(m->key);
-        str[index] = '\0';
-        m = m->next;
-    }
-    str[index] = '\0';
-
-    int litindex = addLiteralToMethod(LIT_SELECTOR, str, method);
-    free(str);
-    return litindex;
-}
-
+/*
+ * Fill dest with an array of string containing temporaries variables for the
+ * method m. Returns the number of temporaries found.
+ *
+ * Starting at index 0, come the method arguments, then the temporaries
+ * variables defined.
+ *
+ * at: x put: y
+ *    | a b c |
+ *
+ * Here 0->x, 1->y, 2->a, 3->b, 4->c
+ */
 static int getTemps(struct Method* m, char*** dest) {
     char **temps = NULL;
     int numTmps = 0;
@@ -294,14 +262,72 @@ static int getTemps(struct Method* m, char*** dest) {
     return numTmps;
 }
 
-static int getInstvars(struct ClassHeader *h, char ***v) {
-    /* TODO recursive super too */
-    *v = h->instsVarNames;
-    return h->instsVarNamesCount;
+/*
+ * Same as getLiteral but needs to compose the actual LIT_SELECTOR by
+ * concatenating all keyword keys.
+ */
+static int getLiteralKw(struct KeywordMsg *msgs, struct Method *method)
+{
+    struct KeywordMsg *m = msgs;
+    int slen = 0;
+    char *str;
+    while(m) {
+        slen += strlen(m->key);
+        m = m->next;
+    }
+    str = malloc(sizeof(char) * slen + 1);
+    m = msgs;
+    int index = 0;
+    while (m) {
+        memcpy(&str[index], m->key, strlen(m->key));
+        index += strlen(m->key);
+        str[index] = '\0';
+        m = m->next;
+    }
+    str[index] = '\0';
+
+    int litindex = getLiteral(LIT_SELECTOR, str, method);
+    free(str);
+    return litindex;
 }
 
+
+struct Val
+getVal(char* varname, struct MethodCompileInfo info, struct Method* m) {
+    struct Val p;
+    for (int i = 0; i < info.numTemps; i++) {
+        if (strcmp(varname, info.temps[i]) == 0) {
+            p.index = i;
+            p.type = VALIS_TEMP;
+            return p;
+        }
+    }
+
+    for (int i = 0; i < info.numInstVars; i++) {
+        if (strcmp(varname, info.instvars[i]) == 0) {
+            p.index = i;
+            p.type = VALIS_RCVR;
+            return p;
+        }
+    }
+
+    /* if not found in temps or instance must be an association */
+    p.type = VALIS_ASSOC;
+    p.index = getLiteral(LIT_ASSOC, varname, m);
+    return p;
+}
+
+/*
+ * Returns the index location of "literal" of type "type". If it is not present
+ * it will create it.
+ *
+ * LIT_SELECTOR and LIT_ASSOC needs to be specified because LIT_ASSOC needs to
+ * build a string ("#%s -> %s", literal,litera), to store and search it.
+ *
+ * It is not clean.
+ */
 static int
-addLiteralToMethod(int type, char* literal, struct Method* method)
+getLiteral(int type, char* literal, struct Method* method)
 {
     static char fmt[] = "#%s -> %s";
     int ret;
@@ -334,15 +360,6 @@ addLiteralToMethod(int type, char* literal, struct Method* method)
         method->literal_frame[method->literal_frame_count++] = str;
     }
     return ret;
-}
-
-static int getLiteralIndex(char*lit, struct Method*m)
-{
-    for (int i = 0; i < m->literal_frame_count; i++) {
-        if (strcmp(lit, m->literal_frame[i]) == 0) return i;
-    }
-    assert(0 == 1);
-    return -1;
 }
 
 static void addByteToMethod(

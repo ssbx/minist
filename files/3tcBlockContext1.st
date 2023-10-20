@@ -8,7 +8,8 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
-unarychain
-    ^ Rectangle at: origin new getX transform !
+" page 559 "
+classes
+    ^ self collect: [ :element | element class ] !
 
 !

@@ -8,7 +8,9 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
-unarychain
-    ^ Rectangle at: origin new getX transform !
+" page 560 "
 
+containsInstanceOf: aClass
+    self do: [ :element | (element isKindOf: aClass) ifTrue: [ ^ true ] .
+    ^ false !
 !

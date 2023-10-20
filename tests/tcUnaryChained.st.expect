@@ -12,14 +12,18 @@ Rectangle comment: 'comment'!
 
 
 unarychain
-    ^ ( origin  new getX transform) .
+    ^ ( Rectangle  at: ( origin  new getX transform)) .
     "
+    <65> pushLiteralVar: 1
     <0> pushRcvr: 0
-    <208> sendLiteralSelectorNoarg: 0
-    <209> sendLiteralSelectorNoarg: 1
     <210> sendLiteralSelectorNoarg: 2
+    <211> sendLiteralSelectorNoarg: 3
+    <212> sendLiteralSelectorNoarg: 4
+    <224> sendLiteralSelector1arg: 0
     <124> returnTop
     Literal Frame:
+        at:
+        #Rectangle -> Rectangle
         new
         getX
         transform

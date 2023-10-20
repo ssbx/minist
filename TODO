@@ -1,10 +1,12 @@
 Nettoyer, le bytecode doit aller dans comp.c
 
-- completer le bytecode compiler
+- completer le bytecode compiler (p
 - créer un object memory de base
 - créer un interp et tester
 
 # futurfutur
 - rendre le bazard strong et modifier le bytecode en consequence
 - reflechir à bytecode -> .ssa (qbe) pour du jit
+- un nouveau type Vector qui controle sa memoire (un élément "droppé" devient
+"nil" pour les objets qui le referencent).
 
