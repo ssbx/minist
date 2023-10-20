@@ -2,6 +2,7 @@
 #include "parse.tab.h"
 #include <assert.h>
 
+/* used from comp.c */
 unsigned char bytecodes_getCodeFor(int type, int val) {
     switch (type) {
         case PUSH_RCVR:
@@ -16,7 +17,7 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             /* 32 - 63 TODO */
             break;
         case PUSH_LITERAL_VARIABLE:
-            /* 64 - 95 TODO */
+            /* 64 - 95 */
             assert(val <= 32);
             return 64 + val;
         case POP_STORE_RCVR:
@@ -46,6 +47,7 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
         case RETURN_STACK_TOP_FROM:
             /* 124 - 125 TODO */
             break;
+/* 126 - 175 TODO */
         case SEND_BIN_MSG:
             /* 176 - 191 */
             if (val == '+') return 176;
@@ -67,6 +69,7 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             if (val == ) return 191; /bitor
             */
             break;
+/* 192 - 207 TODO */
         case SEND_LITERAL_NOARG:
             /* 208 - 223 */
             assert(val <= 16);
@@ -79,12 +82,12 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             /* 240 - 255 */
             assert(val <= 16);
             return 240 + val;
-
     }
-    return 138; // unused
+    return 138; // 138 invalid bytecode
 }
 
 
+/* used from pprint.c */
 const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 0) return "pushRcvr: 0";
     if (code == 1) return "pushRcvr: 1";

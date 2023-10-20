@@ -174,6 +174,18 @@ struct EUnitBinary  { struct ExprUnit *receiver; struct BinaryMsg *msgs; int op;
 struct EUnitUnary   { struct ExprUnit *receiver; struct UnaryMsg *msgs; };
 struct EUnitKeyword { struct ExprUnit *receiver; struct KeywordMsg *msgs; };
 
+/* TODO transform ExprUnit to const when appropriate (id "true" id "false" ...*/
+enum {
+    ST_CONST_SELF,
+    ST_CONST_TRUE,
+    ST_CONST_FALSE,
+    ST_CONST_NIL,
+    ST_CONST_MIN1,
+    ST_CONST_0,
+    ST_CONST_1,
+    ST_CONST_2
+};
+struct EUnitConst   { int value; };
 struct EUnitId      { char *name; };
 struct EUnitString  { char *value; };
 struct EUnitChar    { char *value; };
@@ -192,6 +204,7 @@ union ExprUnitType {
     struct EUnitInteger integer;
     struct EUnitSymbol  symbol;
     struct EUnitArray   array;
+    struct EUnitConst   cst;
 };
 
 /*
