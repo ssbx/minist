@@ -1,0 +1,29 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+unarychain
+    ^ ( origin  new getX transform) .
+    "
+    <0> pushRcvr: 0
+    <208> sendLiteralSelectorNoarg: 0
+    <209> sendLiteralSelectorNoarg: 1
+    <210> sendLiteralSelectorNoarg: 2
+    <124> returnTop
+    Literal Frame:
+        new
+        getX
+        transform
+    "
+ ! !
+
+

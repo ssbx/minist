@@ -6,25 +6,26 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
     switch (type) {
         case PUSH_RCVR:
             /* 0 - 15 */
-            assert(val < 16);
+            assert(val <= 16);
             return val;
         case PUSH_TEMP:
             /* 16 - 31 */
-            assert(val < 16);
+            assert(val <= 16);
             return 16 + val;
         case PUSH_LITERAL_CONSTANT:
             /* 32 - 63 TODO */
             break;
         case PUSH_LITERAL_VARIABLE:
             /* 64 - 95 TODO */
-            break;
+            assert(val <= 32);
+            return 64 + val;
         case POP_STORE_RCVR:
             /* 96 - 103 */
-            assert(val < 7);
+            assert(val <= 8);
             return 96 + val;
         case POP_STORE_TEMP:
             /* 104 - 111 */
-            assert(val < 7);
+            assert(val <= 8);
             return 104 + val;
         case PUSH_CONSTANT:
             /* 112 - 119 TODO */
@@ -68,12 +69,16 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
             break;
         case SEND_LITERAL_NOARG:
             /* 208 - 223 */
-            assert(val < 16);
+            assert(val <= 16);
             return 208 + val;
         case SEND_LITERAL_1ARG:
             /* 224 - 239 */
-            assert(val < 16);
+            assert(val <= 16);
             return 224 + val;
+        case SEND_LITERAL_2ARG:
+            /* 240 - 255 */
+            assert(val <= 16);
+            return 240 + val;
 
     }
     return 138; // unused
@@ -101,6 +106,19 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 17) return "pushTemp: 1";
     if (code == 18) return "pushTemp: 2";
     if (code == 19) return "pushTemp: 3";
+
+    if (code == 64) return "pushLiteralVar: 0";
+    if (code == 65) return "pushLiteralVar: 1";
+    if (code == 66) return "pushLiteralVar: 2";
+    if (code == 67) return "pushLiteralVar: 3";
+    if (code == 68) return "pushLiteralVar: 4";
+    if (code == 69) return "pushLiteralVar: 5";
+    if (code == 70) return "pushLiteralVar: 6";
+    if (code == 71) return "pushLiteralVar: 7";
+    if (code == 72) return "pushLiteralVar: 8";
+    if (code == 73) return "pushLiteralVar: 9";
+    if (code == 74) return "pushLiteralVar: 10";
+
     if (code == 96) return "popAndStoreRcvr: 0";
     if (code == 97) return "popAndStoreRcvr: 1";
     if (code == 98) return "popAndStoreRcvr: 2";
@@ -167,6 +185,22 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 239) return "sendLiteralSelector1arg: 15";
 
 
+    if (code == 240) return "sendLiteralSelector2arg: 0";
+    if (code == 241) return "sendLiteralSelector2arg: 1";
+    if (code == 242) return "sendLiteralSelector2arg: 2";
+    if (code == 243) return "sendLiteralSelector2arg: 3";
+    if (code == 244) return "sendLiteralSelector2arg: 4";
+    if (code == 245) return "sendLiteralSelector2arg: 5";
+    if (code == 246) return "sendLiteralSelector2arg: 6";
+    if (code == 247) return "sendLiteralSelector2arg: 7";
+    if (code == 248) return "sendLiteralSelector2arg: 8";
+    if (code == 249) return "sendLiteralSelector2arg: 9";
+    if (code == 250) return "sendLiteralSelector2arg: 10";
+    if (code == 251) return "sendLiteralSelector2arg: 11";
+    if (code == 252) return "sendLiteralSelector2arg: 12";
+    if (code == 253) return "sendLiteralSelector2arg: 13";
+    if (code == 254) return "sendLiteralSelector2arg: 14";
+    if (code == 255) return "sendLiteralSelector2arg: 15";
 
     return "unknwon bytecode";
 }

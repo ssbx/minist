@@ -1,0 +1,45 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+merge: aRectangle 
+    | minPoint maxPoint |
+     minPoint  := ( origin  min: ( aRectangle  origin)) .
+     maxPoint  := ( corner  max: ( aRectangle  corner)) .
+    ^ ( Rectangle  origin:  minPoint  corner:  maxPoint ) .
+    "
+    <0> pushRcvr: 0
+    <16> pushTemp: 0
+    <209> sendLiteralSelectorNoarg: 1
+    <224> sendLiteralSelector1arg: 0
+    <105> popAndStoreTemp: 1
+    <1> pushRcvr: 1
+    <16> pushTemp: 0
+    <211> sendLiteralSelectorNoarg: 3
+    <226> sendLiteralSelector1arg: 2
+    <106> popAndStoreTemp: 2
+    <69> pushLiteralVar: 5
+    <17> pushTemp: 1
+    <18> pushTemp: 2
+    <244> sendLiteralSelector2arg: 4
+    <124> returnTop
+    Literal Frame:
+        min:
+        origin
+        max:
+        corner
+        origin:corner:
+        #Rectangle -> Rectangle
+    "
+ ! !
+
+

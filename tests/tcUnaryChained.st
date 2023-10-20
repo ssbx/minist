@@ -9,6 +9,6 @@ Rectangle comment: 'comment'!
 !Rectangle methodsFor: 'test'!
 
 unarychain
-    ^ Rectangle at: origin new getX transform !
+    ^ origin new getX transform !
 
 !

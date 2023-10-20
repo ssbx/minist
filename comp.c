@@ -16,7 +16,7 @@ struct MethodCompileInfo {
     int    numInstVars;
 };
 enum {
-    VALIS_NOTFOUND,
+    VALIS_ASSOC,
     VALIS_RCVR,
     VALIS_TEMP
 };
@@ -30,7 +30,9 @@ static void decodeExpr(struct Method*, struct ExprUnit* e, struct MethodCompileI
 static void compileMethod(struct Method*, struct MethodCompileInfo);
 static void addByteToMethod(unsigned char, struct Method*);
 static int getLiteralIndex(char*, struct Method*);
-static int addLiteralToMethod(char*,struct Method*);
+enum {LIT_SELECTOR, LIT_ASSOC};
+static int addLiteralToMethod(int,char*,struct Method*);
+static int addLiteralKwToMethod(struct KeywordMsg *msgs, struct Method *method);
 
 void compiler_compile(struct ClassFile *cf)
 {
@@ -87,10 +89,8 @@ static void compileMethod(
 }
 
 struct Val
-getVal(char* varname, struct MethodCompileInfo info) {
+getVal(char* varname, struct MethodCompileInfo info, struct Method* m) {
     struct Val p;
-    p.type = VALIS_NOTFOUND;
-    p.index = 0;
     for (int i = 0; i < info.numTemps; i++) {
         if (strcmp(varname, info.temps[i]) == 0) {
             p.index = i;
@@ -107,6 +107,10 @@ getVal(char* varname, struct MethodCompileInfo info) {
         }
     }
 
+    /* if not found must be an assoc */
+
+    p.type = VALIS_ASSOC;
+    p.index = addLiteralToMethod(LIT_ASSOC, varname, m);
     return p;
 }
 
@@ -116,6 +120,7 @@ static void decodeExpr(
         struct MethodCompileInfo info)
 {
     int kargc;
+    struct UnaryMsg   *umsg;
     struct KeywordMsg *kmsg;
     int literal_index;
     struct BinaryMsg *binmsg;
@@ -123,14 +128,14 @@ static void decodeExpr(
     unsigned char code;
     switch (expr->type) {
         case ST_ID:
-            val = getVal(expr->u.id.name, info);
-            if (val.type == VALIS_NOTFOUND) {
-                fprintf(stderr, "can not find %s\n", expr->u.id.name);
-                exit(1);
+            val = getVal(expr->u.id.name, info, method);
+            if (val.type == VALIS_ASSOC) {
+                code = bytecodes_getCodeFor(PUSH_LITERAL_VARIABLE, val.index);
+                addByteToMethod(code, method);
             } else if (val.type == VALIS_TEMP) {
                 code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
                 addByteToMethod(code, method);
-            } else {
+            } else if (val.type == VALIS_RCVR) {
                 code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
                 addByteToMethod(code, method);
             }
@@ -156,31 +161,34 @@ static void decodeExpr(
             }
             break;
         case ST_UNARY:
-            // while unarymsg {
-            literal_index = addLiteralToMethod(expr->u.unary.msgs->msg, method);
-            // }
             decodeExpr(method, expr->u.unary.receiver, info);
-            code = bytecodes_getCodeFor(SEND_LITERAL_NOARG, literal_index);
-            addByteToMethod(code, method);
+
+            umsg = expr->u.unary.msgs;
+            while (umsg) {
+                literal_index = addLiteralToMethod(LIT_SELECTOR, umsg->msg, method);
+                code = bytecodes_getCodeFor(SEND_LITERAL_NOARG, literal_index);
+                addByteToMethod(code, method);
+                umsg = umsg->next;
+            }
 
             break;
         case ST_KEYWORD:
-            // while keyword {
-            literal_index = addLiteralToMethod(expr->u.keyword.msgs->key, method);
-            // }
+            literal_index = addLiteralKwToMethod(expr->u.keyword.msgs, method);
 
             decodeExpr(method, expr->u.keyword.receiver, info);
-            decodeExpr(method, expr->u.keyword.msgs->arg, info);
 
             kargc = 0;
             kmsg = expr->u.keyword.msgs;
             while (kmsg) {
                 kargc++;
+                decodeExpr(method, kmsg->arg, info);
                 kmsg =kmsg->next;
             }
             if (kargc == 1) {
-                literal_index = getLiteralIndex(expr->u.keyword.msgs->key, method);
                 code = bytecodes_getCodeFor(SEND_LITERAL_1ARG, literal_index);
+                addByteToMethod(code, method);
+            } else if (kargc == 2) {
+                code = bytecodes_getCodeFor(SEND_LITERAL_2ARG, literal_index);
                 addByteToMethod(code, method);
             }
             break;
@@ -189,8 +197,8 @@ static void decodeExpr(
     if (expr->assignsTo) {
         struct ExprUnit *e = expr->assignsTo;
         while (e) {
-            val = getVal(e->u.id.name, info);
-            if (val.type == VALIS_NOTFOUND) {
+            val = getVal(e->u.id.name, info, method);
+            if (val.type == VALIS_ASSOC) {
                 fprintf(stderr, "can not find %s\n", expr->u.id.name);
                 exit(1);
             }
@@ -212,6 +220,31 @@ static void decodeExpr(
     }
 
     if (expr->returns) addByteToMethod(124, method);
+}
+
+static int addLiteralKwToMethod(struct KeywordMsg *msgs, struct Method *method)
+{
+    struct KeywordMsg *m = msgs;
+    int slen = 0;
+    char *str;
+    while(m) {
+        slen += strlen(m->key);
+        m = m->next;
+    }
+    str = malloc(sizeof(char) * slen + 1);
+    m = msgs;
+    int index = 0;
+    while (m) {
+        memcpy(&str[index], m->key, strlen(m->key));
+        index += strlen(m->key);
+        str[index] = '\0';
+        m = m->next;
+    }
+    str[index] = '\0';
+
+    int litindex = addLiteralToMethod(LIT_SELECTOR, str, method);
+    free(str);
+    return litindex;
 }
 
 static int getTemps(struct Method* m, char*** dest) {
@@ -268,8 +301,9 @@ static int getInstvars(struct ClassHeader *h, char ***v) {
 }
 
 static int
-addLiteralToMethod(char* literal, struct Method* method)
+addLiteralToMethod(int type, char* literal, struct Method* method)
 {
+    static char fmt[] = "#%s -> %s";
     int ret;
     if (method->literal_frame_count == method->literal_frame_size) {
         method->literal_frame =
@@ -278,13 +312,27 @@ addLiteralToMethod(char* literal, struct Method* method)
         method->literal_frame_size *= 2;
     }
 
-    for (int i = 0; i < method->literal_frame_count; i++) {
-        /* allready present */
-        if (strcmp(method->literal_frame[i], literal) == 0)
-            return i;
-    }
     ret = method->literal_frame_count;
-    method->literal_frame[method->literal_frame_count++] = strdup2(literal);
+    if (type == LIT_SELECTOR) {
+        for (int i = 0; i < method->literal_frame_count; i++) {
+            /* allready present */
+            if (strcmp(method->literal_frame[i], literal) == 0)
+                return i;
+        }
+        method->literal_frame[method->literal_frame_count++] = strdup2(literal);
+    } else if (type == LIT_ASSOC) {
+        int strsize = strlen(literal) * 2 + strlen(fmt) + 1;
+        char *str = malloc(sizeof(char) * strsize);
+        snprintf(str, strsize, fmt, literal, literal);
+        for (int i = 0; i < method->literal_frame_count; i++) {
+            /* allready present */
+            if (strcmp(method->literal_frame[i], str) == 0) {
+                free(str);
+                return i;
+            }
+        }
+        method->literal_frame[method->literal_frame_count++] = str;
+    }
     return ret;
 }
 
