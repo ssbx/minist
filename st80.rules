@@ -1,0 +1,41 @@
+# Should create:
+#
+# - bytecode.c (used by the compiler and pretty printer)
+# - vm.c
+#
+# all bytecodes defined as is
+# type:
+#   - used by the COMPILER to request a bytecode value
+# assert:
+#   - used by the COMPILER to assert range
+# bc:
+#   - used by the COMPILER to get the bytecode for type "type"
+# descr:
+#   - used by the PPRINTER
+# case:
+#   - used by the VM to dispatch the bytecode
+# func:
+#   - the function on witch the VM will dispatch
+
+type:   PUSH_RCVR
+assert: ( index < 16 )
+bc:     0 + index
+desc:   "pushRcvr: %i", index
+case:   ( bc < 16 )
+func:
+(bc) {
+     push_rcvr(bc);
+}
+end
+
+type:   PUSH_TEMP
+assert: ( index < 16 )
+bc:     16 + index
+desc:   "pushTemp: %i", index
+case:   ((bc > 15) && (bc < 32))
+func:
+(bc) {
+        push_temp(bc - 16);
+}
+end
+
