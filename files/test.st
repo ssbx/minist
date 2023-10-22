@@ -18,4 +18,7 @@ other: aValue
 incrementIndex
     ^ Index := Index + 4 !
 
+a
+    | a b c |
+    a := b := c := 2 !
 !

@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-char *strdup2(const char *str) {
-    size_t len = strlen(str) + 1;
-    char  *new = malloc(len);
-    memcpy(new, str, len);
+char *strdup2(const char *old) {
+    size_t len = strlen(old);
+    char  *new = malloc(len + 1);
+    memcpy(new, old, len);
     return new;
 }

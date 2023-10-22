@@ -402,9 +402,9 @@ checkStr(char *a, char *b)
 void
 addAssignsTo(struct ExprUnit *exp, struct ExprUnit *id)
 {
-    struct ExprUnit *last = exp->assignsTo;
-    while (last->next) last = last->next;
-    last->next = id;
+    struct ExprUnit *prev = exp->assignsTo;
+    id->next = prev;
+    exp->assignsTo = id;
 }
 
 struct ExprUnit*
