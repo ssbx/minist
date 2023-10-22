@@ -1,7 +1,8 @@
 # Should create:
 #
-# - bytecode.c (used by the compiler and pretty printer)
-# - vm.c
+# - pprint_bc.h
+# - comp_bc.h
+# - vm_bc.h
 #
 # all bytecodes defined as is
 # type:

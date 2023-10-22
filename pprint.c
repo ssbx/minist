@@ -222,8 +222,25 @@ static void print_method(struct Method* m) {
 
     if (m->bytecodes) {
         printf("    \"\n");
+        int needsExtent = 0;
+        unsigned char ext;
         for (int i = 0; i < m->bytecount; i++) {
-            printf("    <%i> %s\n", m->bytecodes[i], bytecodes_getBytecodeDescription(m->bytecodes[i]));
+            if (needsExtent) {
+                printf("    <%i, %i> %s\n", ext,
+                        m->bytecodes[i],
+                        bytecodes_getBytecodeDescription(ext));
+                needsExtent = 0;
+                ext = 0;
+                continue;
+            }
+            if (bytecodes_needsExtent(m->bytecodes[i])) {
+                needsExtent = 1;
+                ext = m->bytecodes[i];
+            } else {
+                printf("    <%i> %s\n",
+                        m->bytecodes[i],
+                        bytecodes_getBytecodeDescription(m->bytecodes[i]));
+            }
         }
         if (m->literal_frame) {
             printf("    Literal Frame:\n");

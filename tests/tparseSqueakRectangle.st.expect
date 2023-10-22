@@ -268,7 +268,7 @@ hash
 
 deltaToEnsureInOrCentered: r extra: aNumber 
     | dX dY halfXDiff halfYDiff |
-     dY  :=  dX  :=  0  .
+     dX  :=  dY  :=  0  .
      halfXDiff  := ((( r  width) - ( self  width) *  aNumber ) truncated) .
      halfYDiff  := ((( r  height) - ( self  height) *  aNumber ) truncated) .
     ((( self  left) < ( r  left)) ifTrue: [ dX  := (( self  left) - ( r  left) -  halfXDiff ) .] ifFalse: [((( self  right) > ( r  right)) ifTrue: [ dX  := (( self  right) - ( r  right) +  halfXDiff ) .]) .]) .
@@ -776,7 +776,7 @@ newRectButtonPressedDo: newRectBlock
 newRectFrom: newRectBlock 
     | rect newRect buttonStart buttonNow delay |
      delay  := ( Delay  forMilliseconds:  10 ) .
-     buttonNow  :=  buttonStart  := ( Sensor  anyButtonPressed) .
+     buttonStart  :=  buttonNow  := ( Sensor  anyButtonPressed) .
      rect  :=  self  .
     ( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .
     ([( buttonNow    buttonStart ) .] whileTrue: [( delay  wait) . buttonNow  := ( Sensor  anyButtonPressed) . newRect  := ( newRectBlock  value:  rect ) .(( newRect  =  rect ) ifFalse: [( Display  border:  rect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) .( Display  border:  newRect  width:  2  rule: ( Form  reverse) fillColor: ( Color  gray)) . rect  :=  newRect  .]) .]) .
@@ -1053,7 +1053,7 @@ center: centerPoint extent: extentPoint
 
 encompassing: listOfPoints 
     | topLeft bottomRight |
-     bottomRight  :=  topLeft  := ( listOfPoints  first) .
+     topLeft  :=  bottomRight  := ( listOfPoints  first) .
     ( listOfPoints  allButFirstDo: [ :p | topLeft  := ( topLeft  min:  p ) . bottomRight  := ( bottomRight  max:  p ) .]) .
     ^ ( self  origin:  topLeft  corner:  bottomRight ) .
  ! !

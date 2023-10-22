@@ -16,6 +16,7 @@ enum {
     POP_STORE_RCVR,
     POP_STORE_TEMP,
     PUSH_CONSTANT,
+    STORE,
     RETURN_CONSTANT,
     RETURN_STACK_TOP_FROM,
     SEND_LITERAL_NOARG,
@@ -24,7 +25,9 @@ enum {
     SEND_BIN_MSG
 };
 
+int bytecodes_needsExtent(unsigned char);
 const char*   bytecodes_getBytecodeDescription(unsigned char);
 unsigned char bytecodes_getCodeFor(int,int);
+unsigned char bytecodes_getExtendedCodeFor(int,int);
 
 #endif // BYTECODES_H

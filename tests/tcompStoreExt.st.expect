@@ -1,0 +1,27 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+incrementIndex
+    ^  Index  := ( Index  +  2 ) .
+    "
+    <64> pushLiteralVar: 0
+    <119> pushConstant: 2
+    <176> send: +
+    <129, 192> send (extended)
+    <124> returnTop
+    Literal Frame:
+        #Index -> Index
+    "
+ ! !
+
+

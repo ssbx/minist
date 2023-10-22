@@ -45,12 +45,12 @@ cascade
 
 assign: c 
     | a b c |
-     b  :=  a  :=  c  .
+     a  :=  b  :=  c  .
  ! 
 
 assign
     | a b c |
-    ^  b  :=  a  :=  c  .
+    ^  a  :=  b  :=  c  .
  ! !
 
 !Rectangle methodsFor: 'test'!

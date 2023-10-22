@@ -177,10 +177,10 @@ static void encodeExpr(
         while (e) {
             val = getVal(e->u.id.name, info, method);
             if (val.type == VALIS_ASSOC) {
-                // TODO
-                //code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
-                //addByteToMethod(code, method);
-                //code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
+                code = bytecodes_getCodeFor(STORE, val.index);
+                addByteToMethod(code, method);
+                code = bytecodes_getExtendedCodeFor(STORE, val.index);
+                addByteToMethod(code, method);
             } else if (val.type == VALIS_TEMP) {
                 code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
                 addByteToMethod(code, method);

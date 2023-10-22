@@ -2,7 +2,21 @@
 #include "parse.tab.h"
 #include <assert.h>
 
+int bytecodes_needsExtent(unsigned char code) {
+    switch (code) {
+        case 129: return 1;
+    }
+    return 0;
+}
 /* used from comp.c */
+unsigned char bytecodes_getExtendedCodeFor(int type, int val) {
+    switch (type) {
+        case STORE:
+            assert(val < 63);
+            return 192 + val;
+    }
+    return 0;
+}
 unsigned char bytecodes_getCodeFor(int type, int val) {
     switch (type) {
         case PUSH_RCVR:
@@ -47,7 +61,13 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
         case RETURN_STACK_TOP_FROM:
             /* 124 - 125 TODO */
             break;
-/* 126 - 175 TODO */
+/* 126 - 128 TODO */
+        case STORE:
+            /* 129 */
+            assert(val < 63);
+            /* it is an extended, comp.c must call for the next byte */
+            return 129;
+/* 130 - 175 TODO */
         case SEND_BIN_MSG:
             /* 176 - 191 */
             if (val == '+') return 176;
@@ -141,6 +161,7 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 122) return "returnFalse";
     if (code == 123) return "returnNil";
     if (code == 124) return "returnTop";
+    if (code == 129) return "send (extended)";
     if (code == 138) return "!wrong bytecode";
     if (code == 176) return "send: +";
     if (code == 177) return "send: -";

@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 char *strdup2(const char *old) {
-    size_t len = strlen(old);
-    char  *new = malloc(len + 1);
+    size_t len = strlen(old) + 1;
+    char  *new = malloc(len);
     memcpy(new, old, len);
     return new;
 }

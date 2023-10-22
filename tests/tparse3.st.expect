@@ -45,12 +45,12 @@ cascade
 
 assign: c 
     | a b |
-     b  :=  a  :=  c  .
+     a  :=  b  :=  c  .
  ! 
 
 assign
     | a b |
-    ^  b  :=  a  :=  c  .
+    ^  a  :=  b  :=  c  .
  ! !
 
 "= = = == = "!

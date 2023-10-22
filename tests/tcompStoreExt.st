@@ -8,11 +8,11 @@ Rectangle comment: 'comment'!
 
 !Rectangle methodsFor: 'test'!
 
-" page 550 "
 
-includesPoint: aPoint
-    origin <= aPoint
-        ifTrue:  [ ^ aPoint < corner ]
-        ifFalse: [ ^ false ] !
+" page 549 "
+
+" Increment a shared variable with a constant "
+incrementIndex
+    ^ Index := Index + 2 !
 
 !
