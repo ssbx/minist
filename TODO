@@ -1,12 +1,22 @@
 Nettoyer, le bytecode doit aller dans comp.c
 
-- completer le bytecode compiler (p
+- completer le bytecode compiler
+- exporter les CompiledMethods de l'image st80 cpp-smalltalk et tester avec.
 - créer un object memory de base
 - créer un interp et tester
 
 # futurfutur
-- rendre le bazard strong et modifier le bytecode en consequence
+- generer comp.h depuis un jeux de règles, pour pouvoir modifier le bytecode
+vite fait (voir st80.rules), pour par example créer une vm basée sur les
+registres.
+- un interpreteur multithread a la erlang
 - reflechir à bytecode -> .ssa (qbe) pour du jit
+
+# futurfutur st nouveau (voir files/ressources/TODO.old)
+- rendre le bazard strong et modifier le bytecode en consequence (bytecodes
+specifiques pour ints floats)
 - un nouveau type Vector qui controle sa memoire (un élément "droppé" devient
 "nil" pour les objets qui le referencent).
+- le type caractère ($a) devrait être un byte. Introduire une notation
+supplémentaire en hexa depuis $00 à $FF
 
