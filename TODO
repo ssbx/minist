@@ -5,6 +5,12 @@ Nettoyer, le bytecode doit aller dans comp.c
 - créer un object memory de base
 - créer un interp et tester
 
+# mem.c
+- basé sur le meme principe de table que st80 mais:
+Un gc qui mouline dans son thread, si un proc st requier un objet qui est bloqué (en train d'être déplacé par le gc), la vm switch de proc. Pas de temps morts?
+    -> mark concurent  (peut laisser des orphelins mais pas grave)
+    -> sweep concurent (bloque l'acces aux objets un par un lors du déplacement)
+
 # futurfutur
 - generer comp.h depuis un jeux de règles, pour pouvoir modifier le bytecode
 vite fait (voir st80.rules), pour par example créer une vm basée sur les
