@@ -39,7 +39,7 @@ run: minist-img-gen
 	./minist-img-gen files/test.st
 
 clean:
-	$(RM) minist-img-gen *.o parse.tab.* scan.yy.*
+	$(RM) minist-img-gen *.o parse.tab.* scan.yy.* tests/*.expect.out
 
 depends: scan.yy.h parse.tab.h
 	$(CC) -MM *.c > depends.mk
