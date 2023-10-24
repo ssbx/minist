@@ -20,12 +20,9 @@ at: y
     <184> send: *
     <119> pushConstant: 2
     <176> send: +
-    <97> popAndStoreRcvr: 1
-    <1> pushRcvr: 1
-    <96> popAndStoreRcvr: 0
-    <0> pushRcvr: 0
-    <105> popAndStoreTemp: 1
-    <17> pushTemp: 1
+    <129, 1> store rcvr
+    <129, 0> store rcvr
+    <129, 65> store temp
     <106> popAndStoreTemp: 2
     <120> returnReceiver
     Literal Frame:

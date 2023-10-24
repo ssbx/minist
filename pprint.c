@@ -228,7 +228,7 @@ static void print_method(struct Method* m) {
             if (needsExtent) {
                 printf("    <%i, %i> %s\n", ext,
                         m->bytecodes[i],
-                        bytecodes_getBytecodeDescription(ext));
+                        bytecodes_getExtBytecodeDescription(ext, m->bytecodes[i]));
                 needsExtent = 0;
                 ext = 0;
                 continue;

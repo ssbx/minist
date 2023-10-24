@@ -177,24 +177,52 @@ static void encodeExpr(
         while (e) {
             val = getVal(e->u.id.name, info, method);
             if (val.type == VALIS_ASSOC) {
-                code = bytecodes_getCodeFor(STORE, val.index);
-                addByteToMethod(code, method);
-                code = bytecodes_getExtendedCodeFor(STORE, val.index);
-                addByteToMethod(code, method);
+                if (e->next || expr->returns) {
+                    code = bytecodes_getCodeFor(STORE, STORE_EXT_LITERAL_VAR);
+                    addByteToMethod(code, method);
+                    code = bytecodes_getExtendedCodeFor(STORE_EXT_LITERAL_VAR, val.index);
+                    addByteToMethod(code, method);
+                } else {
+                    code = bytecodes_getCodeFor(POP_STORE, POP_STORE_EXT_LITERAL_VAR);
+                    addByteToMethod(code, method);
+                    code = bytecodes_getExtendedCodeFor(POP_STORE_EXT_LITERAL_VAR, val.index);
+                    addByteToMethod(code, method);
+                }
             } else if (val.type == VALIS_TEMP) {
-                code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
-                addByteToMethod(code, method);
-                code = bytecodes_getCodeFor(PUSH_TEMP, val.index);
+                if (e->next || expr->returns) {
+                    code = bytecodes_getCodeFor(STORE, val.index);
+                    addByteToMethod(code, method);
+                    code = bytecodes_getExtendedCodeFor(STORE_EXT_TEMP, val.index);
+                    addByteToMethod(code, method);
+                } else {
+                    if (val.index >= 16) {
+                        code = bytecodes_getCodeFor(POP_STORE, POP_STORE_EXT_TEMP);
+                        addByteToMethod(code, method);
+                        code = bytecodes_getExtendedCodeFor(POP_STORE_EXT_TEMP, val.index);
+                        addByteToMethod(code, method);
+                    } else {
+                        code = bytecodes_getCodeFor(POP_STORE_TEMP, val.index);
+                        addByteToMethod(code, method);
+                    }
+                }
             } else if (val.type == VALIS_RCVR) {
-                code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
-                addByteToMethod(code, method);
-                code = bytecodes_getCodeFor(PUSH_RCVR, val.index);
+                if (e->next || expr->returns) {
+                    code = bytecodes_getCodeFor(STORE, val.index);
+                    addByteToMethod(code, method);
+                    code = bytecodes_getExtendedCodeFor(STORE_EXT_RCVR, val.index);
+                    addByteToMethod(code, method);
+                } else {
+                    if (val.index >= 16) {
+                        code = bytecodes_getCodeFor(POP_STORE, POP_STORE_EXT_RCVR);
+                        addByteToMethod(code, method);
+                        code = bytecodes_getExtendedCodeFor(POP_STORE_EXT_RCVR, val.index);
+                        addByteToMethod(code, method);
+                    } else {
+                        code = bytecodes_getCodeFor(POP_STORE_RCVR, val.index);
+                        addByteToMethod(code, method);
+                    }
+                }
             }
-
-            /* if there is a next assignment, push my self so the next
-             * can POP_STORE */
-            if (e->next)
-                addByteToMethod(code, method);
 
             e = e->next;
         }

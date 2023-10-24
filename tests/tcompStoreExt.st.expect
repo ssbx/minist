@@ -17,7 +17,7 @@ incrementIndex
     <64> pushLiteralVar: 0
     <119> pushConstant: 2
     <176> send: +
-    <129, 192> send (extended)
+    <129, 192> store literal var
     <124> returnTop
     Literal Frame:
         #Index -> Index

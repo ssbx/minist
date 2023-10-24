@@ -5,16 +5,39 @@
 int bytecodes_needsExtent(unsigned char code) {
     switch (code) {
         case 129: return 1;
+        case 130: return 1;
     }
     return 0;
 }
 /* used from comp.c */
 unsigned char bytecodes_getExtendedCodeFor(int type, int val) {
     switch (type) {
-        case STORE:
-            assert(val < 63);
+        case STORE_EXT_RCVR:
+            assert(val < 64);
+            return 0 + val;
+        case STORE_EXT_TEMP:
+            assert(val < 64);
+            return 64 + val;
+        case STORE_EXT_LITERAL_CONST:
+            assert(val < 64);
+            return 128 + val;
+        case STORE_EXT_LITERAL_VAR:
+            assert(val < 64);
+            return 192 + val;
+        case POP_STORE_EXT_RCVR:
+            assert(val < 64);
+            return 0 + val;
+        case POP_STORE_EXT_TEMP:
+            assert(val < 64);
+            return 64 + val;
+        case POP_STORE_EXT_LITERAL_CONST:
+            assert(val < 64);
+            return 128 + val;
+        case POP_STORE_EXT_LITERAL_VAR:
+            assert(val < 64);
             return 192 + val;
     }
+    assert(0 == 1);
     return 0;
 }
 unsigned char bytecodes_getCodeFor(int type, int val) {
@@ -64,9 +87,14 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
 /* 126 - 128 TODO */
         case STORE:
             /* 129 */
-            assert(val < 63);
             /* it is an extended, comp.c must call for the next byte */
+            assert(val < 64);
             return 129;
+        case POP_STORE:
+            /* 130 */
+            /* it is an extended, comp.c must call for the next byte */
+            assert(val < 64);
+            return 130;
 /* 130 - 175 TODO */
         case SEND_BIN_MSG:
             /* 176 - 191 */
@@ -106,6 +134,34 @@ unsigned char bytecodes_getCodeFor(int type, int val) {
     return 138; // 138 invalid bytecode
 }
 
+const char* bytecodes_getExtBytecodeDescription(unsigned char code, unsigned char ext) {
+    unsigned char t = ext >> 6;
+    switch (code) {
+        case 129:
+            if (t == 0)
+                return "store rcvr";
+            else if (t == 1)
+                return "store temp";
+            else if (t == 2)
+                return "store illegal";
+            else if (t == 3)
+                return "store literal var";
+            break;
+        case 130:
+            if (t == 0)
+                return "pop store rcvr";
+            else if (t == 1)
+                return "pop store temp";
+            else if (t == 2)
+                return "pop store illegal";
+            else if (t == 3)
+                return "pop store literal var";
+            break;
+
+    }
+    assert(0 == 1);
+    return 0;
+}
 
 /* used from pprint.c */
 const char* bytecodes_getBytecodeDescription(unsigned char code) {
@@ -161,7 +217,8 @@ const char* bytecodes_getBytecodeDescription(unsigned char code) {
     if (code == 122) return "returnFalse";
     if (code == 123) return "returnNil";
     if (code == 124) return "returnTop";
-    if (code == 129) return "send (extended)";
+    if (code == 129) return "store (extended)";
+    if (code == 130) return "pop store (extended)";
     if (code == 138) return "!wrong bytecode";
     if (code == 176) return "send: +";
     if (code == 177) return "send: -";
