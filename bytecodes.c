@@ -4,11 +4,31 @@
 
 int bytecodes_needsExtent(unsigned char code) {
     switch (code) {
-        case 129: return 1;
-        case 130: return 1;
+        case 128:
+        case 129:
+        case 130:
+        case 131:
+        case 133:
+        case 160:
+        case 161:
+        case 162:
+        case 163:
+        case 164:
+        case 165:
+        case 166:
+        case 167:
+        case 172:
+        case 173:
+        case 174:
+        case 175:
+            return 1;
+        case 132:
+        case 134:
+            return 2;
     }
     return 0;
 }
+
 /* used from comp.c */
 unsigned char bytecodes_getExtendedCodeFor(int type, int val) {
     switch (type) {
@@ -40,30 +60,33 @@ unsigned char bytecodes_getExtendedCodeFor(int type, int val) {
     assert(0 == 1);
     return 0;
 }
+
 unsigned char bytecodes_getCodeFor(int type, int val) {
     switch (type) {
         case PUSH_RCVR:
             /* 0 - 15 */
-            assert(val <= 16);
+            assert(val < 16);
             return val;
         case PUSH_TEMP:
             /* 16 - 31 */
-            assert(val <= 16);
+            assert(val < 16);
             return 16 + val;
         case PUSH_LITERAL_CONSTANT:
-            /* 32 - 63 TODO */
+            /* 32 - 63 NOT CURRENT USED BY comp.c TODO*/
+            assert(val < 32);
+            return 32 + val;
             break;
         case PUSH_LITERAL_VARIABLE:
             /* 64 - 95 */
-            assert(val <= 32);
+            assert(val < 32);
             return 64 + val;
         case POP_STORE_RCVR:
             /* 96 - 103 */
-            assert(val <= 8);
+            assert(val < 9);
             return 96 + val;
         case POP_STORE_TEMP:
             /* 104 - 111 */
-            assert(val <= 8);
+            assert(val <= 9);
             return 104 + val;
         case PUSH_CONSTANT:
             /* 112 - 119 TODO */
