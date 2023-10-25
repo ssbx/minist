@@ -1,0 +1,79 @@
+# Should create: TODO
+#
+# - pprint_bc.h
+# - comp_bc.h
+# - vm_bc.h
+#
+# all bytecodes defined as is
+# type:
+#   - used by the COMPILER to request a bytecode value
+# assert:
+#   - used by the COMPILER to assert range
+# bc:
+#   - used by the COMPILER to get the bytecode for type "type"
+# descr:
+#   - used by the PPRINTER
+# case:
+#   - used by the VM to dispatch the bytecode
+# func:
+#   - the function on witch the VM will dispatch
+
+DEF_BEGIN
+type:   PUSH_RCVR
+assert: ( index < 64 )
+returns:
+if (index < 16) {
+    /* simple push_rcvr */
+    codes[0] = 0 + index;
+    return 1;
+} else {
+    codes[0] = PUSH;
+    unsigned char c = 0x00; /* first two bits to zero */
+    codes[1] = c + index;
+    return 2; /* two bytecodes to add */
+}
+interp:
+PUSH_RCVR(bcode) {
+    pushToStack(context->rcvr->vars[bcode], context);
+    context->pc ++;
+}
+DEF_END
+
+DEF_BEGIN
+type:   PUSH
+interp:
+PUSH(bcode) {
+    unsigned char ext   = fetch(context);
+    unsigned char type  = ext & 0xC0; /* clear last 6 bits */
+    unsigned char index = ext & 0x3F; /* clear first 2 bits */
+    switch (type) {
+        case 0x00:
+            PUSH_RCVR(index);
+            break;
+        case 0x40:
+            PUSH_TEMP(index);
+            break;
+        case 0x80:
+            PUSH_LITERAL_CONST(index);
+            break;
+        case 0xC0:
+            PUSH_LITERAL_VAR(index);
+            break;
+    }
+}
+returns:
+codes[0] = 128;
+codes[1] = 0x00;
+
+DEF_BEGIN
+type:   PUSH_TEMP
+assert: ( index < 16 )
+returns: 16 + index
+desc:   "pushTemp: %i", index
+case:   ((bc > 15) && (bc < 32))
+func:
+(bc) {
+        push_temp(bc - 16);
+}
+end
+

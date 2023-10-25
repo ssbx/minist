@@ -35,6 +35,8 @@ include depends.mk
 .PHONY: t run clean depends check all install uninstall
 all:: run
 
+#run:
+#	awk -f test.awk st80.def
 run: minist-img-gen
 	./minist-img-gen files/test.st
 
