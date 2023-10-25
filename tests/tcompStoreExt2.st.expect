@@ -1,0 +1,32 @@
+-----
+Object subclass: #Rectangle
+	instanceVariableNames: ' origin  corner '
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Graphics-Primitives'!
+
+Rectangle comment: 'comment'!
+
+!Rectangle methodsFor: 'test'!
+
+
+
+a
+    | a b c d |
+    ^  a  :=  b  :=  c  :=  origin  :=  corner  :=  SomethingElse  :=  d  :=  2  .
+    "
+    <119> pushConstant: 2
+    <129, 64> store temp
+    <129, 65> store temp
+    <129, 66> store temp
+    <129, 0> store rcvr
+    <129, 1> store rcvr
+    <129, 192> store literal var
+    <129, 67> store temp
+    <124> returnTop
+    Literal Frame:
+        #SomethingElse -> SomethingElse
+    "
+ ! !
+
+
